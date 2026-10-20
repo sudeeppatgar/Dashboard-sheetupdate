@@ -1,49 +1,39 @@
 import asyncHandler from "../utils/asyncHandler.js";
-import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import MakeModel from "../models/makeModel.model.js";
+import {
+  createMakeModel as createMakeModelRecord,
+  getMakeModels as getMakeModelRecords,
+  getMakeModelById,
+  updateMakeModel as updateMakeModelRecord,
+  deleteMakeModel as deleteMakeModelRecord,
+} from "../services/make-models.service.js";
 
 export const createMakeModel = asyncHandler(async (req, res) => {
-  const item = await MakeModel.create(req.body);
+  const item = await createMakeModelRecord(req.body);
 
   res.status(201).json(new ApiResponse(201, item, "Make model created"));
 });
 
 export const getMakeModels = asyncHandler(async (req, res) => {
-  const items = await MakeModel.find().sort({ createdAt: -1 });
+  const items = await getMakeModelRecords();
 
   res.json(new ApiResponse(200, items, "Make models fetched"));
 });
 
 export const getMakeModel = asyncHandler(async (req, res) => {
-  const item = await MakeModel.findById(req.params.id);
-
-  if (!item) {
-    throw new ApiError(404, "Make model not found");
-  }
+  const item = await getMakeModelById(req.params.id);
 
   res.json(new ApiResponse(200, item, "Make model fetched"));
 });
 
 export const updateMakeModel = asyncHandler(async (req, res) => {
-  const item = await MakeModel.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
-
-  if (!item) {
-    throw new ApiError(404, "Make model not found");
-  }
+  const item = await updateMakeModelRecord(req.params.id, req.body);
 
   res.json(new ApiResponse(200, item, "Make model updated"));
 });
 
 export const deleteMakeModel = asyncHandler(async (req, res) => {
-  const item = await MakeModel.findByIdAndDelete(req.params.id);
-
-  if (!item) {
-    throw new ApiError(404, "Make model not found");
-  }
+  await deleteMakeModelRecord(req.params.id);
 
   res.json(new ApiResponse(200, null, "Make model deleted"));
 });
