@@ -1,5 +1,6 @@
-import { useMemo, type Dispatch, type SetStateAction } from 'react'
+import { useMemo, useState, type Dispatch, type SetStateAction } from 'react'
 import AssetFilters from './AssetFilters'
+import AssetDetailPanel from './AssetDetailPanel'
 import AssetForm from './AssetForm'
 import AssetTable from './AssetTable'
 import type { Asset, AssetFilters as AssetFiltersValue, AssetFormValue } from '../types'
@@ -40,6 +41,8 @@ function AssetManagement({
   onDelete,
   onResetForm,
 }: AssetManagementProps) {
+  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null)
+
   const categoryOptions = useMemo(
     () => categories.map((item) => ({ value: item._id, label: item.name })),
     [categories],
@@ -74,6 +77,10 @@ function AssetManagement({
       return matchesSearch && matchesStatus && matchesCategory && matchesMakeModel && matchesProcessor
     })
   }, [assets, filters])
+
+  const selectedAsset = selectedAssetId
+    ? assets.find((asset) => asset._id === selectedAssetId)
+    : undefined
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -119,9 +126,14 @@ function AssetManagement({
         totalCount={assets.length}
         canManage={canManage}
         submitting={submitting}
+        onViewDetails={(asset) => setSelectedAssetId(asset._id)}
         onEdit={onEdit}
         onDelete={(id) => void onDelete(id)}
       />
+
+      {selectedAsset ? (
+        <AssetDetailPanel asset={selectedAsset} onClose={() => setSelectedAssetId(null)} />
+      ) : null}
     </section>
   )
 }

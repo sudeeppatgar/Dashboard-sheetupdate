@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import LoginPage from './modules/auth/components/LoginPage'
 import type { LoginFormValue, Session } from './modules/auth/types'
 import type { AssetManagementProps } from './modules/assets/components/AssetManagement'
-import { emptyAssetFilters, emptyAssetForm } from './modules/assets/constants'
+import { emptyAssetFilters, emptyAssetForm, getDateInputValue } from './modules/assets/constants'
 import type { Asset, AssetFilters, AssetFormValue } from './modules/assets/types'
 import type { NameResourceSectionProps } from './modules/catalog/components/NameResourceSection'
 import { emptyNameForm } from './modules/catalog/constants'
@@ -105,7 +105,7 @@ function App() {
 
       if (status === 401) {
         handleLogout(false)
-        setDashboardError('Session expired. Please log in again.')
+        setNotice({ type: 'error', message: 'Session expired. Please log in again.' })
       } else {
         setDashboardError(getErrorMessage(error, 'Unable to load dashboard data.'))
       }
@@ -368,6 +368,7 @@ function App() {
         processorId: asset.processorId?._id ?? '',
         serialNumber: asset.serialNumber ?? '',
         status: asset.status ?? 'available',
+        transactionDate: getDateInputValue(asset.transactionDate),
       })
     },
     onDelete: (id) => handleDelete(id, deleteAsset, 'Asset deleted.'),
@@ -384,6 +385,7 @@ function App() {
       loading={loading}
       notice={notice}
       dashboardError={dashboardError}
+      onRetry={loadDashboard}
       onLogout={handleLogout}
       resources={resourceProps}
       assets={assetProps}

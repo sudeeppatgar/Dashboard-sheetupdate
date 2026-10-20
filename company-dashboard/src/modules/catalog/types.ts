@@ -24,6 +24,8 @@ export type NameForm = {
   name: string
 }
 
+export type NameFormErrors = Partial<Record<keyof NameForm, string>>
+
 export type NameResourceController = {
   form: NameForm
   setForm: Dispatch<SetStateAction<NameForm>>

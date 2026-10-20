@@ -6,6 +6,8 @@ import NameResourceSection, {
   type NameResourceSectionProps,
 } from '../../catalog/components/NameResourceSection'
 import type { Notice } from '../../../shared/types'
+import ErrorState from '../../../shared/components/ErrorState'
+import LoadingState from '../../../shared/components/LoadingState'
 import type { DashboardData } from '../types'
 import DashboardHeader from './DashboardHeader'
 
@@ -15,6 +17,7 @@ type DashboardPageProps = {
   loading: boolean
   notice: Notice | null
   dashboardError: string
+  onRetry: () => Promise<void>
   onLogout: () => void
   resources: {
     categories: NameResourceSectionProps
@@ -30,6 +33,7 @@ function DashboardPage({
   loading,
   notice,
   dashboardError,
+  onRetry,
   onLogout,
   resources,
   assets,
@@ -41,14 +45,13 @@ function DashboardPage({
           user={user}
           data={data}
           notice={notice}
-          dashboardError={dashboardError}
           onLogout={onLogout}
         />
 
         {loading ? (
-          <div className="rounded-3xl border border-slate-200 bg-white px-6 py-16 text-center text-sm text-slate-500">
-            Loading dashboard data...
-          </div>
+          <LoadingState message="Loading dashboard data..." />
+        ) : dashboardError ? (
+          <ErrorState message={dashboardError} onRetry={onRetry} />
         ) : (
           <div className="space-y-6">
             <NameResourceSection {...resources.categories} />

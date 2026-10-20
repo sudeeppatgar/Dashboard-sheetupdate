@@ -1,4 +1,6 @@
 import { assetStatusOptions } from '../constants'
+import EmptyState from '../../../shared/components/EmptyState'
+import { formatDate } from '../../../shared/utils/formatDate'
 import type { Asset } from '../types'
 
 type AssetTableProps = {
@@ -6,14 +8,23 @@ type AssetTableProps = {
   totalCount: number
   canManage: boolean
   submitting: boolean
+  onViewDetails: (asset: Asset) => void
   onEdit: (asset: Asset) => void
   onDelete: (id: string) => void
 }
 
-function AssetTable({ assets, totalCount, canManage, submitting, onEdit, onDelete }: AssetTableProps) {
+function AssetTable({
+  assets,
+  totalCount,
+  canManage,
+  submitting,
+  onViewDetails,
+  onEdit,
+  onDelete,
+}: AssetTableProps) {
   return (
     <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200">
-      <table className="min-w-[1040px] w-full border-collapse text-left text-sm">
+      <table className="min-w-[1180px] w-full border-collapse text-left text-sm">
         <thead className="bg-slate-100 text-slate-600">
           <tr>
             <th className="px-4 py-3 font-medium">Asset</th>
@@ -21,6 +32,7 @@ function AssetTable({ assets, totalCount, canManage, submitting, onEdit, onDelet
             <th className="px-4 py-3 font-medium">Make model</th>
             <th className="px-4 py-3 font-medium">Processor</th>
             <th className="px-4 py-3 font-medium">Serial</th>
+            <th className="px-4 py-3 font-medium">Purchase / transaction</th>
             <th className="px-4 py-3 font-medium">Status</th>
             {canManage ? <th className="px-4 py-3 font-medium">Actions</th> : null}
           </tr>
@@ -28,18 +40,40 @@ function AssetTable({ assets, totalCount, canManage, submitting, onEdit, onDelet
         <tbody className="divide-y divide-slate-100 bg-white">
           {assets.length === 0 ? (
             <tr>
-              <td className="px-4 py-8 text-center text-slate-500" colSpan={canManage ? 7 : 6}>
-                {totalCount === 0 ? 'No assets found.' : 'No assets match the selected filters.'}
+              <td className="px-4 py-8 text-center text-slate-500" colSpan={canManage ? 8 : 7}>
+                <EmptyState
+                  title={totalCount === 0 ? 'No assets yet' : 'No matching assets'}
+                  message={
+                    totalCount === 0
+                      ? canManage
+                        ? 'Add an asset to start tracking company equipment.'
+                        : 'No assets are currently available to view.'
+                      : 'Try changing or clearing the selected filters.'
+                  }
+                />
               </td>
             </tr>
           ) : (
             assets.map((asset) => (
               <tr key={asset._id} className="hover:bg-slate-50">
-                <td className="px-4 py-3 font-medium text-slate-900">{asset.fullName}</td>
+                <td className="px-4 py-3">
+                  <button
+                    type="button"
+                    onClick={() => onViewDetails(asset)}
+                    className="group text-left focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2"
+                    aria-label={`View details for ${asset.fullName}`}
+                  >
+                    <span className="block font-medium text-slate-900 group-hover:text-cyan-700">
+                      {asset.fullName}
+                    </span>
+                    <span className="mt-0.5 block text-xs text-cyan-700">View details</span>
+                  </button>
+                </td>
                 <td className="px-4 py-3 text-slate-600">{asset.categoryId?.name ?? '—'}</td>
                 <td className="px-4 py-3 text-slate-600">{asset.makeModelId?.name ?? '—'}</td>
                 <td className="px-4 py-3 text-slate-600">{asset.processorId?.name ?? '—'}</td>
-                <td className="px-4 py-3 text-slate-600">{asset.serialNumber ?? '—'}</td>
+                <td className="px-4 py-3 text-slate-600">{asset.serialNumber || '—'}</td>
+                <td className="px-4 py-3 text-slate-600">{formatDate(asset.transactionDate)}</td>
                 <td className="px-4 py-3">
                   <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
                     {assetStatusOptions.find(

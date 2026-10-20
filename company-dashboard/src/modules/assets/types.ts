@@ -12,6 +12,7 @@ export type Asset = {
   makeModelId?: MakeModel
   processorId?: Processor
   createdAt?: string
+  updatedAt?: string
 }
 
 export type AssetFormValue = {
@@ -21,7 +22,10 @@ export type AssetFormValue = {
   processorId: string
   serialNumber: string
   status: AssetStatus
+  transactionDate: string
 }
+
+export type AssetFormErrors = Partial<Record<keyof AssetFormValue, string>>
 
 export type AssetFilters = {
   search: string

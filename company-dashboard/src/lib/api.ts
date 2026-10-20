@@ -126,12 +126,21 @@ export const deleteProcessor = async (id: string) => {
 }
 
 export const createAsset = async (payload: AssetFormValue) => {
-  const { data } = await api.post<ApiEnvelope<Asset>>('/assets', payload)
+  const { transactionDate, ...assetFields } = payload
+  const requestPayload = transactionDate.trim()
+    ? { ...assetFields, transactionDate: transactionDate.trim() }
+    : assetFields
+  const { data } = await api.post<ApiEnvelope<Asset>>('/assets', requestPayload)
   return data.data
 }
 
 export const updateAsset = async (id: string, payload: AssetFormValue) => {
-  const { data } = await api.put<ApiEnvelope<Asset>>(`/assets/${id}`, payload)
+  const { transactionDate, ...assetFields } = payload
+  const requestPayload = {
+    ...assetFields,
+    transactionDate: transactionDate.trim() || null,
+  }
+  const { data } = await api.put<ApiEnvelope<Asset>>(`/assets/${id}`, requestPayload)
   return data.data
 }
 
