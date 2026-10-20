@@ -50,6 +50,7 @@ type NameSectionProps = {
   onDelete: (id: string) => Promise<void>
   onReset: () => void
   submitting: boolean
+  canManage: boolean
 }
 
 const emptyNameForm: NameForm = { name: '' }
@@ -106,6 +107,7 @@ function App() {
   const [editingAssetId, setEditingAssetId] = useState<string | null>(null)
 
   const isAuthenticated = Boolean(session?.token)
+  const canManage = user?.role === 'admin'
 
   const handleLogout = useCallback((clearNotice = true) => {
     clearSession()
@@ -570,6 +572,7 @@ function App() {
                 setEditingCategoryId(null)
                 setCategoryForm(emptyNameForm)
               }}
+              canManage={canManage}
             />
 
             <NameResourceSection
@@ -590,6 +593,7 @@ function App() {
                 setEditingMakeModelId(null)
                 setMakeModelForm(emptyNameForm)
               }}
+              canManage={canManage}
             />
 
             <NameResourceSection
@@ -610,6 +614,7 @@ function App() {
                 setEditingProcessorId(null)
                 setProcessorForm(emptyNameForm)
               }}
+              canManage={canManage}
             />
 
             <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -622,7 +627,8 @@ function App() {
                 </div>
               </div>
 
-              <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              {canManage ? (
+                <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="block">
                     <span className="mb-2 block text-sm font-medium text-slate-700">Full name</span>
@@ -759,7 +765,12 @@ function App() {
                     Reset
                   </button>
                 </div>
-              </div>
+                </div>
+              ) : (
+                <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  You have read-only access. Contact an administrator to add or update assets.
+                </div>
+              )}
 
               <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
@@ -886,13 +897,13 @@ function App() {
                       <th className="px-4 py-3 font-medium">Processor</th>
                       <th className="px-4 py-3 font-medium">Serial</th>
                       <th className="px-4 py-3 font-medium">Status</th>
-                      <th className="px-4 py-3 font-medium">Actions</th>
+                      {canManage ? <th className="px-4 py-3 font-medium">Actions</th> : null}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white">
                     {filteredAssets.length === 0 ? (
                       <tr>
-                        <td className="px-4 py-8 text-center text-slate-500" colSpan={7}>
+                        <td className="px-4 py-8 text-center text-slate-500" colSpan={canManage ? 7 : 6}>
                           {assets.length === 0 ? 'No assets found.' : 'No assets match the selected filters.'}
                         </td>
                       </tr>
@@ -911,35 +922,37 @@ function App() {
                               )?.label ?? 'Available'}
                             </span>
                           </td>
-                          <td className="px-4 py-3">
-                            <div className="flex flex-wrap gap-2">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setEditingAssetId(asset._id)
-                                  setAssetForm({
-                                    fullName: asset.fullName,
-                                    categoryId: asset.categoryId?._id ?? '',
-                                    makeModelId: asset.makeModelId?._id ?? '',
-                                    processorId: asset.processorId?._id ?? '',
-                                    serialNumber: asset.serialNumber ?? '',
-                                    status: asset.status ?? 'available',
-                                  })
-                                }}
-                                className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-700 transition hover:bg-cyan-100"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => void handleDelete(asset._id, deleteAsset, 'Asset deleted.')}
-                                disabled={submitting}
-                                className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
+                          {canManage ? (
+                            <td className="px-4 py-3">
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingAssetId(asset._id)
+                                    setAssetForm({
+                                      fullName: asset.fullName,
+                                      categoryId: asset.categoryId?._id ?? '',
+                                      makeModelId: asset.makeModelId?._id ?? '',
+                                      processorId: asset.processorId?._id ?? '',
+                                      serialNumber: asset.serialNumber ?? '',
+                                      status: asset.status ?? 'available',
+                                    })
+                                  }}
+                                  className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-700 transition hover:bg-cyan-100"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => void handleDelete(asset._id, deleteAsset, 'Asset deleted.')}
+                                  disabled={submitting}
+                                  className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          ) : null}
                         </tr>
                       ))
                     )}
@@ -966,6 +979,7 @@ function NameResourceSection({
   onDelete,
   onReset,
   submitting,
+  canManage,
 }: NameSectionProps) {
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -976,7 +990,8 @@ function NameResourceSection({
         </div>
       </div>
 
-      <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      {canManage ? (
+        <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
         <div className="flex flex-col gap-3 sm:flex-row">
           <input
             value={form.name}
@@ -1004,7 +1019,12 @@ function NameResourceSection({
             </button>
           ) : null}
         </div>
-      </div>
+        </div>
+      ) : (
+        <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          You have read-only access to {title.toLowerCase()}.
+        </div>
+      )}
 
       <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
         <table className="min-w-[640px] w-full border-collapse text-left text-sm">
@@ -1012,13 +1032,13 @@ function NameResourceSection({
             <tr>
               <th className="px-4 py-3 font-medium">Name</th>
               <th className="px-4 py-3 font-medium">Created</th>
-              <th className="px-4 py-3 font-medium">Actions</th>
+              {canManage ? <th className="px-4 py-3 font-medium">Actions</th> : null}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 bg-white">
             {items.length === 0 ? (
               <tr>
-                <td className="px-4 py-8 text-center text-slate-500" colSpan={3}>
+                <td className="px-4 py-8 text-center text-slate-500" colSpan={canManage ? 3 : 2}>
                   No records found.
                 </td>
               </tr>
@@ -1029,25 +1049,27 @@ function NameResourceSection({
                   <td className="px-4 py-3 text-slate-600">
                     {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '—'}
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => onEdit(item)}
-                        className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-700 transition hover:bg-cyan-100"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void onDelete(item._id)}
-                        disabled={submitting}
-                        className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
+                  {canManage ? (
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onEdit(item)}
+                          className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-700 transition hover:bg-cyan-100"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void onDelete(item._id)}
+                          disabled={submitting}
+                          className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  ) : null}
                 </tr>
               ))
             )}
