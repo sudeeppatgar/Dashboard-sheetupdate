@@ -16,8 +16,10 @@ import {
   deleteProcessor,
   fetchDashboard,
   login,
+  assetStatusOptions,
   type Asset,
   type AssetFormValue,
+  type AssetStatus,
   type Category,
   type MakeModel,
   type Processor,
@@ -58,6 +60,23 @@ const emptyAssetForm: AssetFormValue = {
   makeModelId: '',
   processorId: '',
   serialNumber: '',
+  status: 'available',
+}
+
+type AssetFilters = {
+  search: string
+  status: AssetStatus | 'all'
+  categoryId: string
+  makeModelId: string
+  processorId: string
+}
+
+const emptyAssetFilters: AssetFilters = {
+  search: '',
+  status: 'all',
+  categoryId: '',
+  makeModelId: '',
+  processorId: '',
 }
 
 function App() {
@@ -79,6 +98,7 @@ function App() {
   const [makeModelForm, setMakeModelForm] = useState<NameForm>(emptyNameForm)
   const [processorForm, setProcessorForm] = useState<NameForm>(emptyNameForm)
   const [assetForm, setAssetForm] = useState<AssetFormValue>(emptyAssetForm)
+  const [assetFilters, setAssetFilters] = useState<AssetFilters>(emptyAssetFilters)
 
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
   const [editingMakeModelId, setEditingMakeModelId] = useState<string | null>(null)
@@ -99,6 +119,7 @@ function App() {
     setMakeModelForm(emptyNameForm)
     setProcessorForm(emptyNameForm)
     setAssetForm(emptyAssetForm)
+    setAssetFilters(emptyAssetFilters)
     setEditingCategoryId(null)
     setEditingMakeModelId(null)
     setEditingProcessorId(null)
@@ -313,6 +334,43 @@ function App() {
     [processors],
   )
 
+  const filteredAssets = useMemo(() => {
+    const search = assetFilters.search.trim().toLowerCase()
+
+    return assets.filter((asset) => {
+      const assetStatus = asset.status ?? 'available'
+      const matchesSearch =
+        !search ||
+        asset.fullName.toLowerCase().includes(search) ||
+        asset.serialNumber?.toLowerCase().includes(search)
+      const matchesStatus = assetFilters.status === 'all' || assetStatus === assetFilters.status
+      const matchesCategory =
+        !assetFilters.categoryId || asset.categoryId?._id === assetFilters.categoryId
+      const matchesMakeModel =
+        !assetFilters.makeModelId || asset.makeModelId?._id === assetFilters.makeModelId
+      const matchesProcessor =
+        !assetFilters.processorId || asset.processorId?._id === assetFilters.processorId
+
+      return matchesSearch && matchesStatus && matchesCategory && matchesMakeModel && matchesProcessor
+    })
+  }, [assetFilters, assets])
+
+  const assetStatusCounts = useMemo(
+    () =>
+      assetStatusOptions.map((option) => ({
+        ...option,
+        count: assets.filter((asset) => (asset.status ?? 'available') === option.value).length,
+      })),
+    [assets],
+  )
+
+  const hasAssetFilters =
+    Boolean(assetFilters.search) ||
+    assetFilters.status !== 'all' ||
+    Boolean(assetFilters.categoryId) ||
+    Boolean(assetFilters.makeModelId) ||
+    Boolean(assetFilters.processorId)
+
   if (!isAuthenticated) {
     return (
       <main className="min-h-screen bg-slate-950 px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
@@ -458,6 +516,17 @@ function App() {
             ))}
           </div>
 
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {assetStatusCounts.map((item) => (
+              <div key={item.value} className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                <p className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500">
+                  {item.label}
+                </p>
+                <p className="mt-1 text-xl font-semibold text-slate-900">{item.count}</p>
+              </div>
+            ))}
+          </div>
+
           {notice ? (
             <div
               className={`mt-4 rounded-2xl border px-4 py-3 text-sm ${
@@ -586,6 +655,26 @@ function App() {
                   </label>
 
                   <label className="block">
+                    <span className="mb-2 block text-sm font-medium text-slate-700">Status</span>
+                    <select
+                      value={assetForm.status}
+                      onChange={(event) =>
+                        setAssetForm((current) => ({
+                          ...current,
+                          status: event.target.value as AssetStatus,
+                        }))
+                      }
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+                    >
+                      {assetStatusOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="block">
                     <span className="mb-2 block text-sm font-medium text-slate-700">Category</span>
                     <select
                       value={assetForm.categoryId}
@@ -672,8 +761,123 @@ function App() {
                 </div>
               </div>
 
-              <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
-                <table className="min-w-[920px] w-full border-collapse text-left text-sm">
+              <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+                  <label className="block flex-1">
+                    <span className="mb-2 block text-sm font-medium text-slate-700">Search assets</span>
+                    <input
+                      value={assetFilters.search}
+                      onChange={(event) =>
+                        setAssetFilters((current) => ({ ...current, search: event.target.value }))
+                      }
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+                      placeholder="Search by asset name or serial number"
+                    />
+                  </label>
+
+                  <label className="block lg:w-44">
+                    <span className="mb-2 block text-sm font-medium text-slate-700">Status</span>
+                    <select
+                      value={assetFilters.status}
+                      onChange={(event) =>
+                        setAssetFilters((current) => ({
+                          ...current,
+                          status: event.target.value as AssetStatus | 'all',
+                        }))
+                      }
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+                    >
+                      <option value="all">All statuses</option>
+                      {assetStatusOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="block lg:w-44">
+                    <span className="mb-2 block text-sm font-medium text-slate-700">Category</span>
+                    <select
+                      value={assetFilters.categoryId}
+                      onChange={(event) =>
+                        setAssetFilters((current) => ({ ...current, categoryId: event.target.value }))
+                      }
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+                    >
+                      <option value="">All categories</option>
+                      {assetCategoryOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={() => setAssetFilters(emptyAssetFilters)}
+                    disabled={!hasAssetFilters}
+                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Clear filters
+                  </button>
+                </div>
+
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm text-slate-500">
+                    Showing {filteredAssets.length} of {assets.length} assets
+                  </p>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <label className="block sm:w-44">
+                      <span className="sr-only">Make model</span>
+                      <select
+                        aria-label="Filter by make model"
+                        value={assetFilters.makeModelId}
+                        onChange={(event) =>
+                          setAssetFilters((current) => ({
+                            ...current,
+                            makeModelId: event.target.value,
+                          }))
+                        }
+                        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+                      >
+                        <option value="">All make models</option>
+                        {assetMakeModelOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="block sm:w-44">
+                      <span className="sr-only">Processor</span>
+                      <select
+                        aria-label="Filter by processor"
+                        value={assetFilters.processorId}
+                        onChange={(event) =>
+                          setAssetFilters((current) => ({
+                            ...current,
+                            processorId: event.target.value,
+                          }))
+                        }
+                        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+                      >
+                        <option value="">All processors</option>
+                        {assetProcessorOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200">
+                <table className="min-w-[1040px] w-full border-collapse text-left text-sm">
                   <thead className="bg-slate-100 text-slate-600">
                     <tr>
                       <th className="px-4 py-3 font-medium">Asset</th>
@@ -681,24 +885,32 @@ function App() {
                       <th className="px-4 py-3 font-medium">Make model</th>
                       <th className="px-4 py-3 font-medium">Processor</th>
                       <th className="px-4 py-3 font-medium">Serial</th>
+                      <th className="px-4 py-3 font-medium">Status</th>
                       <th className="px-4 py-3 font-medium">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white">
-                    {assets.length === 0 ? (
+                    {filteredAssets.length === 0 ? (
                       <tr>
-                        <td className="px-4 py-8 text-center text-slate-500" colSpan={6}>
-                          No assets found.
+                        <td className="px-4 py-8 text-center text-slate-500" colSpan={7}>
+                          {assets.length === 0 ? 'No assets found.' : 'No assets match the selected filters.'}
                         </td>
                       </tr>
                     ) : (
-                      assets.map((asset) => (
+                      filteredAssets.map((asset) => (
                         <tr key={asset._id} className="hover:bg-slate-50">
                           <td className="px-4 py-3 font-medium text-slate-900">{asset.fullName}</td>
                           <td className="px-4 py-3 text-slate-600">{asset.categoryId?.name ?? '—'}</td>
                           <td className="px-4 py-3 text-slate-600">{asset.makeModelId?.name ?? '—'}</td>
                           <td className="px-4 py-3 text-slate-600">{asset.processorId?.name ?? '—'}</td>
                           <td className="px-4 py-3 text-slate-600">{asset.serialNumber ?? '—'}</td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                              {assetStatusOptions.find(
+                                (option) => option.value === (asset.status ?? 'available'),
+                              )?.label ?? 'Available'}
+                            </span>
+                          </td>
                           <td className="px-4 py-3">
                             <div className="flex flex-wrap gap-2">
                               <button
@@ -711,6 +923,7 @@ function App() {
                                     makeModelId: asset.makeModelId?._id ?? '',
                                     processorId: asset.processorId?._id ?? '',
                                     serialNumber: asset.serialNumber ?? '',
+                                    status: asset.status ?? 'available',
                                   })
                                 }}
                                 className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-700 transition hover:bg-cyan-100"

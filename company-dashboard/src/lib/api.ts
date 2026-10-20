@@ -65,10 +65,20 @@ export type Processor = {
   createdAt?: string
 }
 
+export type AssetStatus = 'available' | 'assigned' | 'maintenance' | 'retired'
+
+export const assetStatusOptions: Array<{ value: AssetStatus; label: string }> = [
+  { value: 'available', label: 'Available' },
+  { value: 'assigned', label: 'Assigned' },
+  { value: 'maintenance', label: 'Under repair' },
+  { value: 'retired', label: 'Retired' },
+]
+
 export type Asset = {
   _id: string
   fullName: string
   serialNumber?: string
+  status?: AssetStatus
   transactionDate?: string
   categoryId?: Category
   makeModelId?: MakeModel
@@ -168,6 +178,7 @@ export type AssetFormValue = {
   makeModelId: string
   processorId: string
   serialNumber: string
+  status: AssetStatus
 }
 
 export const createAsset = async (payload: AssetFormValue) => {
