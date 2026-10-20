@@ -1,4 +1,5 @@
 import { isMongoId, isNonEmptyString, trimValue } from "../utils/validators.js";
+import { ASSET_STATUSES } from "../models/asset.model.js";
 
 const objectIdValidator = (label) => ({
   required: false,
@@ -26,6 +27,12 @@ export const createAssetValidator = {
     type: "string",
     transform: trimValue,
   },
+  status: {
+    required: false,
+    type: "string",
+    enum: ASSET_STATUSES,
+    message: `status must be one of: ${ASSET_STATUSES.join(", ")}`,
+  },
 };
 
 export const updateAssetValidator = {
@@ -42,6 +49,12 @@ export const updateAssetValidator = {
     required: false,
     type: "string",
     transform: trimValue,
+  },
+  status: {
+    required: false,
+    type: "string",
+    enum: ASSET_STATUSES,
+    message: `status must be one of: ${ASSET_STATUSES.join(", ")}`,
   },
 };
 

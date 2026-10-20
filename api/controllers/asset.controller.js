@@ -1,7 +1,7 @@
 import asyncHandler from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import Asset from "../models/asset.model.js";
+import Asset, { ASSET_STATUSES } from "../models/asset.model.js";
 
 export const createAsset = asyncHandler(async (req, res) => {
   const asset = await Asset.create(req.body);
@@ -22,6 +22,21 @@ export const getAssets = asyncHandler(async (req, res) => {
 
   if (req.query.processorId) {
     filter.processorId = req.query.processorId;
+  }
+
+  if (ASSET_STATUSES.includes(req.query.status)) {
+    filter.status = req.query.status;
+  }
+
+  if (req.query.search) {
+    const search = String(req.query.search).trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    if (search) {
+      filter.$or = [
+        { fullName: { $regex: search, $options: "i" } },
+        { serialNumber: { $regex: search, $options: "i" } },
+      ];
+    }
   }
 
   const assets = await Asset.find(filter)

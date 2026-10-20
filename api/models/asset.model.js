@@ -1,5 +1,12 @@
 import mongoose from "mongoose";
 
+export const ASSET_STATUSES = [
+  "available",
+  "assigned",
+  "maintenance",
+  "retired",
+];
+
 const assetSchema = new mongoose.Schema(
   {
     transactionDate: Date,
@@ -26,6 +33,12 @@ const assetSchema = new mongoose.Schema(
     },
 
     serialNumber: String,
+
+    status: {
+      type: String,
+      enum: ASSET_STATUSES,
+      default: "available",
+    },
   },
   { timestamps: true }
 );
