@@ -1,14 +1,6 @@
-export type SessionUser = {
-  _id: string
-  name: string
-  email: string
-  role?: string
-}
+import type { Session } from '../modules/auth/types'
 
-export type Session = {
-  token: string
-  user: SessionUser
-}
+export type { Session, SessionUser } from '../modules/auth/types'
 
 const SESSION_KEY = 'company-dashboard-session'
 

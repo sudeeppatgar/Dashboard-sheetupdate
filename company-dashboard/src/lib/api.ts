@@ -1,5 +1,9 @@
 import axios from 'axios'
-import { clearSession, getToken, type SessionUser } from './storage'
+import type { LoginResponse } from '../modules/auth/types'
+import type { Asset, AssetFormValue } from '../modules/assets/types'
+import type { Category, MakeModel, Processor } from '../modules/catalog/types'
+import type { DashboardData } from '../modules/dashboard/types'
+import { clearSession, getToken } from './storage'
 
 const rawBaseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
 const baseURL = rawBaseURL.replace(/\/$/, '').endsWith('/api')
@@ -42,61 +46,10 @@ type ApiEnvelope<T> = {
 
 type ApiListEnvelope<T> = ApiEnvelope<T[]>
 
-type LoginPayload = {
-  user: SessionUser
-  token: string
-}
-
-export type Category = {
-  _id: string
-  name: string
-  createdAt?: string
-}
-
-export type MakeModel = {
-  _id: string
-  name: string
-  createdAt?: string
-}
-
-export type Processor = {
-  _id: string
-  name: string
-  createdAt?: string
-}
-
-export type AssetStatus = 'available' | 'assigned' | 'maintenance' | 'retired'
-
-export const assetStatusOptions: Array<{ value: AssetStatus; label: string }> = [
-  { value: 'available', label: 'Available' },
-  { value: 'assigned', label: 'Assigned' },
-  { value: 'maintenance', label: 'Under repair' },
-  { value: 'retired', label: 'Retired' },
-]
-
-export type Asset = {
-  _id: string
-  fullName: string
-  serialNumber?: string
-  status?: AssetStatus
-  transactionDate?: string
-  categoryId?: Category
-  makeModelId?: MakeModel
-  processorId?: Processor
-  createdAt?: string
-}
-
-export type DashboardData = {
-  categories: Category[]
-  makeModels: MakeModel[]
-  processors: Processor[]
-  assets: Asset[]
-}
-
 const unwrap = <T,>(response: { data: ApiEnvelope<T> }) => response.data.data
 
 export const login = async (email: string, password: string) => {
-  const response = await api.post<ApiEnvelope<LoginPayload>>('/auth/login', {
+  const response = await api.post<ApiEnvelope<LoginResponse>>('/auth/login', {
     email,
     password,
   })
@@ -170,15 +123,6 @@ export const updateProcessor = async (id: string, name: string) => {
 
 export const deleteProcessor = async (id: string) => {
   await api.delete(`/processors/${id}`)
-}
-
-export type AssetFormValue = {
-  fullName: string
-  categoryId: string
-  makeModelId: string
-  processorId: string
-  serialNumber: string
-  status: AssetStatus
 }
 
 export const createAsset = async (payload: AssetFormValue) => {
