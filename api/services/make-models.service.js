@@ -1,5 +1,6 @@
 import { ApiError } from "../utils/ApiError.js";
 import MakeModel from "../models/makeModel.model.js";
+import Asset from "../models/asset.model.js";
 
 export const createMakeModel = (data) => MakeModel.create(data);
 
@@ -29,11 +30,22 @@ export const updateMakeModel = async (id, data) => {
 };
 
 export const deleteMakeModel = async (id) => {
-  const item = await MakeModel.findByIdAndDelete(id);
+  const item = await MakeModel.findById(id);
 
   if (!item) {
     throw new ApiError(404, "Make model not found");
   }
+
+  const isReferenced = await Asset.exists({ makeModelId: id });
+
+  if (isReferenced) {
+    throw new ApiError(
+      409,
+      "Cannot delete make model because it is referenced by one or more assets",
+    );
+  }
+
+  await MakeModel.findByIdAndDelete(id);
 
   return item;
 };

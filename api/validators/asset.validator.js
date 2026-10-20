@@ -1,4 +1,9 @@
-import { isMongoId, isNonEmptyString, trimValue } from "../utils/validators.js";
+import {
+  isMongoId,
+  isNonEmptyString,
+  isValidDate,
+  trimValue,
+} from "../utils/validators.js";
 import { ASSET_STATUSES } from "../models/asset.model.js";
 
 const objectIdValidator = (label) => ({
@@ -6,6 +11,14 @@ const objectIdValidator = (label) => ({
   type: "string",
   validate: (value) => (isMongoId(value) ? true : `${label} must be a valid id`),
 });
+
+const transactionDateValidator = {
+  required: false,
+  type: "string",
+  transform: trimValue,
+  validate: (value) =>
+    isValidDate(value) ? true : "transactionDate must be a valid date",
+};
 
 export const createAssetValidator = {
   fullName: {
@@ -22,6 +35,7 @@ export const createAssetValidator = {
   },
   makeModelId: objectIdValidator("makeModelId"),
   processorId: objectIdValidator("processorId"),
+  transactionDate: transactionDateValidator,
   serialNumber: {
     required: false,
     type: "string",
@@ -45,6 +59,7 @@ export const updateAssetValidator = {
   categoryId: objectIdValidator("categoryId"),
   makeModelId: objectIdValidator("makeModelId"),
   processorId: objectIdValidator("processorId"),
+  transactionDate: transactionDateValidator,
   serialNumber: {
     required: false,
     type: "string",

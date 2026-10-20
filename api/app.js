@@ -4,17 +4,16 @@ import helmet from "helmet";
 import { ApiError } from "./utils/ApiError.js";
 import router from "./routes/index.js";
 import { errorMiddleware } from "./middleware/error.middleware.js";
+import { config } from "./config/index.js";
 
 const app = express();
-const corsOrigin = process.env.CORS_ORIGIN || true;
+const corsOptions = {
+  origin: config.corsOrigin,
+  credentials: true,
+};
 
-app.use(
-  cors({
-    origin: corsOrigin,
-    credentials: true,
-  }),
-);
-app.options(/.*/, cors({ origin: corsOrigin, credentials: true }));
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 app.use(express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

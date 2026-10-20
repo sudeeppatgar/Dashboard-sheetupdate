@@ -1,5 +1,6 @@
 import { ApiError } from "../utils/ApiError.js";
 import Processor from "../models/processor.model.js";
+import Asset from "../models/asset.model.js";
 
 export const createProcessor = (data) => Processor.create(data);
 
@@ -29,11 +30,22 @@ export const updateProcessor = async (id, data) => {
 };
 
 export const deleteProcessor = async (id) => {
-  const processor = await Processor.findByIdAndDelete(id);
+  const processor = await Processor.findById(id);
 
   if (!processor) {
     throw new ApiError(404, "Processor not found");
   }
+
+  const isReferenced = await Asset.exists({ processorId: id });
+
+  if (isReferenced) {
+    throw new ApiError(
+      409,
+      "Cannot delete processor because it is referenced by one or more assets",
+    );
+  }
+
+  await Processor.findByIdAndDelete(id);
 
   return processor;
 };

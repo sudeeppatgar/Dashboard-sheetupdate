@@ -17,3 +17,29 @@ export const isMongoId = (value) =>
 
 export const trimValue = (value) =>
   typeof value === "string" ? value.trim() : value;
+
+export const isValidDate = (value) => {
+  if (typeof value !== "string" || !value.trim()) {
+    return false;
+  }
+
+  const normalized = value.trim();
+  const timestamp = Date.parse(normalized);
+
+  if (Number.isNaN(timestamp)) {
+    return false;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+    const [year, month, day] = normalized.split("-").map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+
+    return (
+      date.getUTCFullYear() === year &&
+      date.getUTCMonth() === month - 1 &&
+      date.getUTCDate() === day
+    );
+  }
+
+  return true;
+};

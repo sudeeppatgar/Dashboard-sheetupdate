@@ -1,5 +1,6 @@
 import { ApiError } from "../utils/ApiError.js";
 import Category from "../models/category.model.js";
+import Asset from "../models/asset.model.js";
 
 export const createCategory = (data) => Category.create(data);
 
@@ -29,11 +30,22 @@ export const updateCategory = async (id, data) => {
 };
 
 export const deleteCategory = async (id) => {
-  const category = await Category.findByIdAndDelete(id);
+  const category = await Category.findById(id);
 
   if (!category) {
     throw new ApiError(404, "Category not found");
   }
+
+  const isReferenced = await Asset.exists({ categoryId: id });
+
+  if (isReferenced) {
+    throw new ApiError(
+      409,
+      "Cannot delete category because it is referenced by one or more assets",
+    );
+  }
+
+  await Category.findByIdAndDelete(id);
 
   return category;
 };

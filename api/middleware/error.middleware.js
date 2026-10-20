@@ -1,5 +1,6 @@
 
 import { ApiError } from "../utils/ApiError.js";
+import { config } from "../config/index.js";
 
 export const errorMiddleware = (err, req, res, next) => {
   const statusCode =
@@ -26,7 +27,7 @@ export const errorMiddleware = (err, req, res, next) => {
     errors = [{ field: duplicateField, message }];
   }
 
-  if (process.env.NODE_ENV !== "production") {
+  if (!config.isProduction) {
     console.error(err.stack || err);
   }
 
