@@ -4,7 +4,8 @@ import {  createAsset,
   getAssets,
   getAsset,
   updateAsset,
-  deleteAsset } from "../controllers/asset.controller.js";
+  deleteAsset,
+  exportAssets } from "../controllers/asset.controller.js";
 import { protect, restrictTo } from "../middleware/auth.middleware.js";
 import { validateBody, validateParams } from "../middleware/validator.middleware.js";
 import {
@@ -18,6 +19,7 @@ const router = Router();
 router.use(protect);
 
 router.post("/", restrictTo("admin"), validateBody(createAssetValidator), createAsset);
+router.get("/export.csv", exportAssets);
 router.get("/", getAssets);
 router.get("/:id", validateParams(assetIdValidator), getAsset);
 router.put("/:id", restrictTo("admin"), validateParams(assetIdValidator), validateBody(updateAssetValidator), updateAsset);

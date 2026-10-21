@@ -6,6 +6,7 @@ import {
   getAssetById,
   updateAsset as updateAssetRecord,
   deleteAsset as deleteAssetRecord,
+  exportAssetsCsv,
 } from "../services/assets.service.js";
 
 export const createAsset = asyncHandler(async (req, res) => {
@@ -36,4 +37,11 @@ export const deleteAsset = asyncHandler(async (req, res) => {
   await deleteAssetRecord(req.params.id);
 
   res.json(new ApiResponse(200, null, "Asset deleted"));
+});
+
+export const exportAssets = asyncHandler(async (req, res) => {
+  const csv = await exportAssetsCsv(req.query);
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", 'attachment; filename="assets.csv"');
+  res.send(csv);
 });

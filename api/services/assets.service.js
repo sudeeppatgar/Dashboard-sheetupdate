@@ -101,6 +101,33 @@ export const updateAsset = async (id, data) => {
   return asset;
 };
 
+export const exportAssetsCsv = async (query = {}) => {
+  const filter = buildAssetFilter(query);
+  const assets = await Asset.find(filter)
+    .populate("categoryId")
+    .populate("makeModelId")
+    .populate("processorId")
+    .populate("assignedEmployeeId")
+    .sort({ createdAt: -1 });
+  const header = ["Name","Serial Number","Status","Condition","Location","Category","Make/Model","Processor","Employee","Purchase Date","Warranty Start","Warranty End"];
+  const rows = assets.map((a) => [
+    a.fullName,
+    a.serialNumber || "",
+    a.status,
+    a.condition || "",
+    a.location || "",
+    a.categoryId?.name || "",
+    a.makeModelId?.name || "",
+    a.processorId?.name || "",
+    a.assignedEmployeeId?.name || "",
+    a.transactionDate ? new Date(a.transactionDate).toISOString().slice(0,10) : "",
+    a.warrantyStartDate ? new Date(a.warrantyStartDate).toISOString().slice(0,10) : "",
+    a.warrantyEndDate ? new Date(a.warrantyEndDate).toISOString().slice(0,10) : "",
+  ]);
+  const escape = (v) => `"${String(v).replace(/"/g, '""')}"`;
+  return [header, ...rows].map((r) => r.map(escape).join(",")).join("\n");
+};
+
 export const deleteAsset = async (id) => {
   const asset = await Asset.findByIdAndDelete(id);
 
