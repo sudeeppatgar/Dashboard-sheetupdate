@@ -90,6 +90,10 @@ export const updateCategory = async (id: string, name: string) => {
 export const deleteCategory = async (id: string) => {
   await api.delete(`/categories/${id}`)
 }
+export const getAssetAssignment = async (id: string) => (await api.get(`/assets/${id}/assignment`)).data.data
+export const getAssetHistory = async (id: string) => (await api.get(`/assets/${id}/history`)).data.data
+export const assignAsset = async (id: string, payload: any) => (await api.post(`/assets/${id}/assign`, payload)).data.data
+export const returnAsset = async (id: string, payload: any) => (await api.post(`/assets/${id}/return`, payload)).data.data
 export const getEmployees = async (): Promise<Employee[]> => {
   const { data } = await api.get<any>('/employees')
   const payload = data?.data ?? data
