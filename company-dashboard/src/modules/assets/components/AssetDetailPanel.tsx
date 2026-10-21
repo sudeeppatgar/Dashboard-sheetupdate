@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { getAssetHistory } from '../../../lib/api'
 import { assetStatusOptions } from '../constants'
 import type { Asset } from '../types'
 import { formatDate, formatTimestamp } from '../../../shared/utils/formatDate'
@@ -16,14 +17,15 @@ const DetailItem = ({ label, value }: { label: string; value: string }) => (
 )
 
 function AssetDetailPanel({ asset, onClose }: AssetDetailPanelProps) {
+  const [history, setHistory] = useState<any[]>([])
   useEffect(() => {
+    void getAssetHistory(asset._id).then((h) => setHistory(Array.isArray(h) ? h : []))
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose()
     }
-
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onClose])
+  }, [asset._id, onClose])
 
   const status = asset.status ?? 'available'
   const statusLabel =
@@ -74,6 +76,17 @@ function AssetDetailPanel({ asset, onClose }: AssetDetailPanelProps) {
           <DetailItem label="Created" value={formatTimestamp(asset.createdAt)} />
           <DetailItem label="Last updated" value={formatTimestamp(asset.updatedAt)} />
         </dl>
+        <div className="mt-6">
+          <h3 className="text-sm font-semibold">Assignment history</h3>
+          <ul className="mt-2 space-y-2">
+            {history.map((h) => (
+              <li key={h._id} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                {h.employeeId?.name ?? 'Employee'} — {h.returnedAt ? `returned ${new Date(h.returnedAt).toLocaleDateString()}` : `assigned ${new Date(h.assignedAt).toLocaleDateString()}`}
+              </li>
+            ))}
+            {history.length === 0 && <li className="text-sm text-slate-500">No history</li>}
+          </ul>
+        </div>
       </section>
     </div>
   )
