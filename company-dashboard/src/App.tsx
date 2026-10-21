@@ -8,6 +8,7 @@ import type { NameResourceSectionProps } from './modules/catalog/components/Name
 import { emptyNameForm } from './modules/catalog/constants'
 import type { Category, MakeModel, NameForm, Processor } from './modules/catalog/types'
 import DashboardPage from './modules/dashboard/components/DashboardPage'
+import { Sidebar } from './shared/components/Sidebar'
 import { DepartmentsPage } from './modules/departments/components/DepartmentsPage'
 import { EmployeesPage } from './modules/employees/components/EmployeesPage'
 import type { DashboardData } from './modules/dashboard/types'
@@ -386,8 +387,10 @@ function App() {
   }
 
   return (
-    <>
-      <DashboardPage
+    <div className="flex">
+      <Sidebar />
+      <div className="flex-1">
+        <DashboardPage
         data={data}
         user={user}
         loading={loading}
@@ -403,7 +406,8 @@ function App() {
         <DepartmentsPage canManage={canManage} />
         <EmployeesPage canManage={canManage} />
       </div>
-    </>
+      </div>
+    </div>
   )
 }
 
