@@ -8,6 +8,8 @@ import type { NameResourceSectionProps } from './modules/catalog/components/Name
 import { emptyNameForm } from './modules/catalog/constants'
 import type { Category, MakeModel, NameForm, Processor } from './modules/catalog/types'
 import DashboardPage from './modules/dashboard/components/DashboardPage'
+import { DepartmentsPage } from './modules/departments/components/DepartmentsPage'
+import { EmployeesPage } from './modules/employees/components/EmployeesPage'
 import type { DashboardData } from './modules/dashboard/types'
 import type { Notice } from './shared/types'
 import { getErrorMessage } from './shared/utils/getErrorMessage'
@@ -383,17 +385,23 @@ function App() {
   }
 
   return (
-    <DashboardPage
-      data={data}
-      user={user}
-      loading={loading}
-      notice={notice}
-      dashboardError={dashboardError}
-      onRetry={loadDashboard}
-      onLogout={handleLogout}
-      resources={resourceProps}
-      assets={assetProps}
-    />
+    <>
+      <DashboardPage
+        data={data}
+        user={user}
+        loading={loading}
+        notice={notice}
+        dashboardError={dashboardError}
+        onRetry={loadDashboard}
+        onLogout={handleLogout}
+        resources={resourceProps}
+        assets={assetProps}
+      />
+      <div className="mx-auto max-w-6xl space-y-6 p-4">
+        <DepartmentsPage canManage={canManage} />
+        <EmployeesPage canManage={canManage} />
+      </div>
+    </>
   )
 }
 
