@@ -1,5 +1,5 @@
 import { ApiError } from "../utils/ApiError.js";
-import Asset, { ASSET_STATUSES } from "../models/asset.model.js";
+import Asset, { ASSET_STATUSES, ASSET_CONDITIONS } from "../models/asset.model.js";
 
 const buildAssetFilter = (query = {}) => {
   const filter = {};
@@ -36,7 +36,12 @@ const buildAssetFilter = (query = {}) => {
   return filter;
 };
 
-export const createAsset = (data) => Asset.create(data);
+export const createAsset = async (data) => {
+  if (data.warrantyStartDate && data.warrantyEndDate && new Date(data.warrantyEndDate) < new Date(data.warrantyStartDate)) {
+    throw new ApiError(400, "Warranty end date cannot be before start date");
+  }
+  return Asset.create(data);
+};
 
 export const getAssets = (query) =>
   Asset.find(buildAssetFilter(query))
@@ -59,6 +64,9 @@ export const getAssetById = async (id) => {
 };
 
 export const updateAsset = async (id, data) => {
+  if (data.warrantyStartDate && data.warrantyEndDate && new Date(data.warrantyEndDate) < new Date(data.warrantyStartDate)) {
+    throw new ApiError(400, "Warranty end date cannot be before start date");
+  }
   const asset = await Asset.findByIdAndUpdate(id, data, {
     new: true,
     runValidators: true,

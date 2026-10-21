@@ -7,6 +7,8 @@ export const ASSET_STATUSES = [
   "retired",
 ];
 
+export const ASSET_CONDITIONS = ["new", "good", "fair", "damaged", "under_repair"];
+
 const assetSchema = new mongoose.Schema(
   {
     transactionDate: Date,
@@ -38,6 +40,23 @@ const assetSchema = new mongoose.Schema(
       type: String,
       enum: ASSET_STATUSES,
       default: "available",
+    },
+
+    location: { type: String, trim: true },
+
+    condition: {
+      type: String,
+      enum: ASSET_CONDITIONS,
+      default: "good",
+    },
+
+    warrantyStartDate: Date,
+
+    warrantyEndDate: Date,
+
+    assignedEmployeeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employee",
     },
   },
   { timestamps: true }
