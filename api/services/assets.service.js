@@ -43,12 +43,34 @@ export const createAsset = async (data) => {
   return Asset.create(data);
 };
 
-export const getAssets = (query) =>
-  Asset.find(buildAssetFilter(query))
-    .populate("categoryId")
-    .populate("makeModelId")
-    .populate("processorId")
-    .sort({ createdAt: -1 });
+export const getAssets = async (query = {}) => {
+  const filter = buildAssetFilter(query);
+  const page = Math.max(1, parseInt(query.page, 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(query.limit, 10) || 25));
+  const skip = (page - 1) * limit;
+  const [items, totalItems] = await Promise.all([
+    Asset.find(filter)
+      .populate("categoryId")
+      .populate("makeModelId")
+      .populate("processorId")
+      .populate("assignedEmployeeId")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Asset.countDocuments(filter),
+  ]);
+  return {
+    items,
+    pagination: {
+      page,
+      limit,
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit) || 1,
+      hasNextPage: page * limit < totalItems,
+      hasPreviousPage: page > 1,
+    },
+  };
+};
 
 export const getAssetById = async (id) => {
   const asset = await Asset.findById(id)

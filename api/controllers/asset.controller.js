@@ -15,9 +15,9 @@ export const createAsset = asyncHandler(async (req, res) => {
 });
 
 export const getAssets = asyncHandler(async (req, res) => {
-  const assets = await getAssetRecords(req.query);
+  const result = await getAssetRecords(req.query);
 
-  res.json(new ApiResponse(200, assets, "Assets fetched"));
+  res.json(new ApiResponse(200, result, "Assets fetched"));
 });
 
 export const getAsset = asyncHandler(async (req, res) => {
