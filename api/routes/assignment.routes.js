@@ -6,7 +6,6 @@ import {
   returnAssetHandler,
 } from "../controllers/assignment.controller.js";
 import { protect, restrictTo } from "../middleware/auth.middleware.js";
-import { validate } from "../middleware/validator.middleware.js";
 
 const router = Router();
 

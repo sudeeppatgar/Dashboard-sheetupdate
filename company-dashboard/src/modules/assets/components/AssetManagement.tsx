@@ -3,14 +3,18 @@ import AssetFilters from './AssetFilters'
 import AssetDetailPanel from './AssetDetailPanel'
 import AssetForm from './AssetForm'
 import AssetTable from './AssetTable'
+import AssignmentDialog from './AssignmentDialog'
+import { assignAsset, returnAsset } from '../../../lib/api'
 import type { Asset, AssetFilters as AssetFiltersValue, AssetFormValue } from '../types'
 import type { Category, MakeModel, Processor } from '../../catalog/types'
+import type { Employee } from '../../employees/types'
 
 export type AssetManagementProps = {
   assets: Asset[]
   categories: Category[]
   makeModels: MakeModel[]
   processors: Processor[]
+  employees: Employee[]
   form: AssetFormValue
   setForm: Dispatch<SetStateAction<AssetFormValue>>
   filters: AssetFiltersValue
@@ -22,6 +26,7 @@ export type AssetManagementProps = {
   onEdit: (asset: Asset) => void
   onDelete: (id: string) => Promise<void>
   onResetForm: () => void
+  onReload: () => Promise<void>
 }
 
 function AssetManagement({
@@ -29,6 +34,7 @@ function AssetManagement({
   categories,
   makeModels,
   processors,
+  employees,
   form,
   setForm,
   filters,
@@ -40,8 +46,36 @@ function AssetManagement({
   onEdit,
   onDelete,
   onResetForm,
+  onReload,
 }: AssetManagementProps) {
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null)
+  const [assigningAsset, setAssigningAsset] = useState<Asset | null>(null)
+  const [returningAsset, setReturningAsset] = useState<Asset | null>(null)
+  const [dialogSubmitting, setDialogSubmitting] = useState(false)
+
+  const handleAssign = async (payload: Record<string, unknown>) => {
+    if (!assigningAsset) return
+    setDialogSubmitting(true)
+    try {
+      await assignAsset(assigningAsset._id, payload)
+      setAssigningAsset(null)
+      await onReload()
+    } finally {
+      setDialogSubmitting(false)
+    }
+  }
+
+  const handleReturn = async (payload: Record<string, unknown>) => {
+    if (!returningAsset) return
+    setDialogSubmitting(true)
+    try {
+      await returnAsset(returningAsset._id, payload)
+      setReturningAsset(null)
+      await onReload()
+    } finally {
+      setDialogSubmitting(false)
+    }
+  }
 
   const categoryOptions = useMemo(
     () => categories.map((item) => ({ value: item._id, label: item.name })),
@@ -129,10 +163,34 @@ function AssetManagement({
         onViewDetails={(asset) => setSelectedAssetId(asset._id)}
         onEdit={onEdit}
         onDelete={(id) => void onDelete(id)}
+        onAssign={setAssigningAsset}
+        onReturn={setReturningAsset}
       />
 
       {selectedAsset ? (
         <AssetDetailPanel asset={selectedAsset} onClose={() => setSelectedAssetId(null)} />
+      ) : null}
+
+      {assigningAsset ? (
+        <AssignmentDialog
+          asset={assigningAsset}
+          mode="assign"
+          employees={employees}
+          submitting={dialogSubmitting}
+          onClose={() => setAssigningAsset(null)}
+          onSubmit={handleAssign}
+        />
+      ) : null}
+
+      {returningAsset ? (
+        <AssignmentDialog
+          asset={returningAsset}
+          mode="return"
+          employees={employees}
+          submitting={dialogSubmitting}
+          onClose={() => setReturningAsset(null)}
+          onSubmit={handleReturn}
+        />
       ) : null}
     </section>
   )

@@ -366,6 +366,7 @@ function App() {
     categories,
     makeModels,
     processors,
+    employees,
     form: assetForm,
     setForm: setAssetForm,
     filters: assetFilters,
@@ -395,6 +396,7 @@ function App() {
       setEditingAssetId(null)
       setAssetForm(emptyAssetForm)
     },
+    onReload: loadDashboard,
   }
 
   return (

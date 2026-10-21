@@ -11,6 +11,8 @@ type AssetTableProps = {
   onViewDetails: (asset: Asset) => void
   onEdit: (asset: Asset) => void
   onDelete: (id: string) => void
+  onAssign: (asset: Asset) => void
+  onReturn: (asset: Asset) => void
 }
 
 function AssetTable({
@@ -21,6 +23,8 @@ function AssetTable({
   onViewDetails,
   onEdit,
   onDelete,
+  onAssign,
+  onReturn,
 }: AssetTableProps) {
   return (
     <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200">
@@ -91,6 +95,26 @@ function AssetTable({
                       >
                         Edit
                       </button>
+                      {(asset.status ?? 'available') === 'available' ? (
+                        <button
+                          type="button"
+                          onClick={() => onAssign(asset)}
+                          disabled={submitting}
+                          className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Assign
+                        </button>
+                      ) : null}
+                      {(asset.status ?? 'available') === 'assigned' ? (
+                        <button
+                          type="button"
+                          onClick={() => onReturn(asset)}
+                          disabled={submitting}
+                          className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Return
+                        </button>
+                      ) : null}
                       <button
                         type="button"
                         onClick={() => onDelete(asset._id)}
