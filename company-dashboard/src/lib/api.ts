@@ -90,6 +90,11 @@ export const updateCategory = async (id: string, name: string) => {
 export const deleteCategory = async (id: string) => {
   await api.delete(`/categories/${id}`)
 }
+export const getDashboardSummary = async () => (await api.get('/dashboard/summary')).data.data
+export const exportAssetsCsvUrl = (filters?: Record<string, string>) => {
+  const params = new URLSearchParams(filters || {})
+  return `${api.defaults.baseURL}/assets/export.csv?${params.toString()}`
+}
 export const getAssetAssignment = async (id: string) => (await api.get(`/assets/${id}/assignment`)).data.data
 export const getAssetHistory = async (id: string) => (await api.get(`/assets/${id}/history`)).data.data
 export const assignAsset = async (id: string, payload: any) => (await api.post(`/assets/${id}/assign`, payload)).data.data
