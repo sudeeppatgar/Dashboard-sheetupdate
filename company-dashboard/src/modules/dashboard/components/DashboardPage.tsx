@@ -2,9 +2,6 @@ import type { SessionUser } from '../../auth/types'
 import AssetManagement, {
   type AssetManagementProps,
 } from '../../assets/components/AssetManagement'
-import NameResourceSection, {
-  type NameResourceSectionProps,
-} from '../../catalog/components/NameResourceSection'
 import type { Notice } from '../../../shared/types'
 import ErrorState from '../../../shared/components/ErrorState'
 import LoadingState from '../../../shared/components/LoadingState'
@@ -19,11 +16,6 @@ type DashboardPageProps = {
   dashboardError: string
   onRetry: () => Promise<void>
   onLogout: () => void
-  resources: {
-    categories: NameResourceSectionProps
-    makeModels: NameResourceSectionProps
-    processors: NameResourceSectionProps
-  }
   assets: AssetManagementProps
 }
 
@@ -35,7 +27,6 @@ function DashboardPage({
   dashboardError,
   onRetry,
   onLogout,
-  resources,
   assets,
 }: DashboardPageProps) {
   return (
@@ -54,9 +45,6 @@ function DashboardPage({
           <ErrorState message={dashboardError} onRetry={onRetry} />
         ) : (
           <div className="space-y-6">
-            <NameResourceSection {...resources.categories} />
-            <NameResourceSection {...resources.makeModels} />
-            <NameResourceSection {...resources.processors} />
             <AssetManagement {...assets} />
           </div>
         )}

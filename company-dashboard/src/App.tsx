@@ -5,6 +5,9 @@ import type { AssetManagementProps } from './modules/assets/components/AssetMana
 import { emptyAssetFilters, emptyAssetForm, getDateInputValue } from './modules/assets/constants'
 import type { Asset, AssetFilters, AssetFormValue } from './modules/assets/types'
 import type { NameResourceSectionProps } from './modules/catalog/components/NameResourceSection'
+import CategoriesPage from './modules/catalog/components/CategoriesPage'
+import MakeModelsPage from './modules/catalog/components/MakeModelsPage'
+import ProcessorsPage from './modules/catalog/components/ProcessorsPage'
 import { emptyNameForm } from './modules/catalog/constants'
 import type { Category, MakeModel, NameForm, Processor } from './modules/catalog/types'
 import DashboardPage from './modules/dashboard/components/DashboardPage'
@@ -391,7 +394,10 @@ function App() {
       <Sidebar />
       <div className="flex-1 p-4">
         <Routes>
-          <Route path="/" element={<DashboardPage data={data} user={user} loading={loading} notice={notice} dashboardError={dashboardError} onRetry={loadDashboard} onLogout={handleLogout} resources={resourceProps} assets={assetProps} />} />
+          <Route path="/" element={<DashboardPage data={data} user={user} loading={loading} notice={notice} dashboardError={dashboardError} onRetry={loadDashboard} onLogout={handleLogout} assets={assetProps} />} />
+          <Route path="/categories" element={<CategoriesPage resource={resourceProps.categories} />} />
+          <Route path="/make-models" element={<MakeModelsPage resource={resourceProps.makeModels} />} />
+          <Route path="/processors" element={<ProcessorsPage resource={resourceProps.processors} />} />
           <Route path="/departments" element={<DepartmentsPage canManage={canManage} />} />
           <Route path="/employees" element={<EmployeesPage canManage={canManage} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
