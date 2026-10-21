@@ -10,7 +10,7 @@ import {
 } from "../services/assets.service.js";
 
 export const createAsset = asyncHandler(async (req, res) => {
-  const asset = await createAssetRecord(req.body);
+  const asset = await createAssetRecord({ ...req.body, createdBy: req.user?._id });
 
   res.status(201).json(new ApiResponse(201, asset, "Asset created"));
 });

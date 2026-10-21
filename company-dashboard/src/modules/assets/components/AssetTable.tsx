@@ -38,13 +38,14 @@ function AssetTable({
             <th className="px-4 py-3 font-medium">Serial</th>
             <th className="px-4 py-3 font-medium">Purchase / transaction</th>
             <th className="px-4 py-3 font-medium">Status</th>
+            <th className="px-4 py-3 font-medium">Added by</th>
             {canManage ? <th className="px-4 py-3 font-medium">Actions</th> : null}
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 bg-white">
           {assets.length === 0 ? (
             <tr>
-              <td className="px-4 py-8 text-center text-slate-500" colSpan={canManage ? 8 : 7}>
+              <td className="px-4 py-8 text-center text-slate-500" colSpan={canManage ? 9 : 8}>
                 <EmptyState
                   title={totalCount === 0 ? 'No assets yet' : 'No matching assets'}
                   message={
@@ -78,13 +79,14 @@ function AssetTable({
                 <td className="px-4 py-3 text-slate-600">{asset.processorId?.name ?? '—'}</td>
                 <td className="px-4 py-3 text-slate-600">{asset.serialNumber || '—'}</td>
                 <td className="px-4 py-3 text-slate-600">{formatDate(asset.transactionDate)}</td>
-                <td className="px-4 py-3">
-                  <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                    {assetStatusOptions.find(
-                      (option) => option.value === (asset.status ?? 'available'),
-                    )?.label ?? 'Available'}
-                  </span>
-                </td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                      {assetStatusOptions.find(
+                        (option) => option.value === (asset.status ?? 'available'),
+                      )?.label ?? 'Available'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">{asset.createdBy?.name ?? '—'}</td>
                 {canManage ? (
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">

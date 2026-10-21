@@ -73,6 +73,7 @@ function AssetDetailPanel({ asset, onClose }: AssetDetailPanelProps) {
           <DetailItem label="Serial number" value={asset.serialNumber || 'Not provided'} />
           <DetailItem label="Purchase / transaction date" value={formatDate(asset.transactionDate)} />
           <DetailItem label="Status" value={statusLabel} />
+          <DetailItem label="Added by" value={asset.createdBy?.name ?? '—'} />
           <DetailItem label="Created" value={formatTimestamp(asset.createdAt)} />
           <DetailItem label="Last updated" value={formatTimestamp(asset.updatedAt)} />
         </dl>

@@ -54,6 +54,7 @@ export const getAssets = async (query = {}) => {
       .populate("makeModelId")
       .populate("processorId")
       .populate("assignedEmployeeId")
+      .populate("createdBy", "name email")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit),
@@ -76,7 +77,8 @@ export const getAssetById = async (id) => {
   const asset = await Asset.findById(id)
     .populate("categoryId")
     .populate("makeModelId")
-    .populate("processorId");
+    .populate("processorId")
+    .populate("createdBy", "name email");
 
   if (!asset) {
     throw new ApiError(404, "Asset not found");
@@ -108,8 +110,9 @@ export const exportAssetsCsv = async (query = {}) => {
     .populate("makeModelId")
     .populate("processorId")
     .populate("assignedEmployeeId")
+    .populate("createdBy", "name email")
     .sort({ createdAt: -1 });
-  const header = ["Name","Serial Number","Status","Condition","Location","Category","Make/Model","Processor","Employee","Purchase Date","Warranty Start","Warranty End"];
+  const header = ["Name","Serial Number","Status","Condition","Location","Category","Make/Model","Processor","Employee","Added By","Purchase Date","Warranty Start","Warranty End"];
   const rows = assets.map((a) => [
     a.fullName,
     a.serialNumber || "",
@@ -120,6 +123,7 @@ export const exportAssetsCsv = async (query = {}) => {
     a.makeModelId?.name || "",
     a.processorId?.name || "",
     a.assignedEmployeeId?.name || "",
+    a.createdBy?.name || "",
     a.transactionDate ? new Date(a.transactionDate).toISOString().slice(0,10) : "",
     a.warrantyStartDate ? new Date(a.warrantyStartDate).toISOString().slice(0,10) : "",
     a.warrantyEndDate ? new Date(a.warrantyEndDate).toISOString().slice(0,10) : "",

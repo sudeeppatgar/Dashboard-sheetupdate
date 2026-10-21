@@ -127,23 +127,17 @@ function AssetManagement({
         </div>
       </div>
 
-      {canManage ? (
-        <AssetForm
-          form={form}
-          setForm={setForm}
-          categoryOptions={categoryOptions}
-          makeModelOptions={makeModelOptions}
-          processorOptions={processorOptions}
-          editingId={editingId}
-          submitting={submitting}
-          onSubmit={onSubmit}
-          onReset={onResetForm}
-        />
-      ) : (
-        <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          You have read-only access. Contact an administrator to add or update assets.
-        </div>
-      )}
+      <AssetForm
+        form={form}
+        setForm={setForm}
+        categoryOptions={categoryOptions}
+        makeModelOptions={makeModelOptions}
+        processorOptions={processorOptions}
+        editingId={editingId}
+        submitting={submitting}
+        onSubmit={onSubmit}
+        onReset={onResetForm}
+      />
 
       <AssetFilters
         filters={filters}

@@ -13,6 +13,7 @@ export type Asset = {
   warrantyStartDate?: string
   warrantyEndDate?: string
   assignedEmployeeId?: any
+  createdBy?: { _id: string; name: string; email?: string }
   categoryId?: Category
   makeModelId?: MakeModel
   processorId?: Processor

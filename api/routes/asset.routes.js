@@ -18,7 +18,7 @@ const router = Router();
 
 router.use(protect);
 
-router.post("/", restrictTo("admin"), validateBody(createAssetValidator), createAsset);
+router.post("/", protect, validateBody(createAssetValidator), createAsset);
 router.get("/export.csv", exportAssets);
 router.get("/", getAssets);
 router.get("/:id", validateParams(assetIdValidator), getAsset);
