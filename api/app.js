@@ -18,6 +18,9 @@ app.use(express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
 app.use("/api", router);
 app.use((req, res, next) => {
   next(new ApiError(404, "Route not found"));
