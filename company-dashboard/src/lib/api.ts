@@ -4,6 +4,7 @@ import type { Asset, AssetFormValue } from '../modules/assets/types'
 import type { Category, MakeModel, Processor } from '../modules/catalog/types'
 import type { DashboardData } from '../modules/dashboard/types'
 import type { Department } from '../modules/departments/types'
+import type { Employee } from '../modules/employees/types'
 import { clearSession, getToken } from './storage'
 
 const rawBaseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
@@ -89,6 +90,15 @@ export const updateCategory = async (id: string, name: string) => {
 export const deleteCategory = async (id: string) => {
   await api.delete(`/categories/${id}`)
 }
+export const getEmployees = async (): Promise<Employee[]> => {
+  const { data } = await api.get<any>('/employees')
+  const payload = data?.data ?? data
+  return Array.isArray(payload) ? payload : payload?.items ?? []
+}
+export const createEmployee = async (payload: any) => (await api.post('/employees', payload)).data.data
+export const updateEmployee = async (id: string, payload: any) => (await api.put(`/employees/${id}`, payload)).data.data
+export const deleteEmployee = async (id: string) => { await api.delete(`/employees/${id}`) }
+export const toggleEmployeeStatus = async (id: string, isActive: boolean) => (await api.patch(`/employees/${id}/status`, { isActive })).data.data
 export const getDepartments = async (): Promise<Department[]> => {
   const { data } = await api.get<any>('/departments')
   const payload = data?.data ?? data
