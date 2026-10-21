@@ -3,6 +3,7 @@ import type { LoginResponse } from '../modules/auth/types'
 import type { Asset, AssetFormValue } from '../modules/assets/types'
 import type { Category, MakeModel, Processor } from '../modules/catalog/types'
 import type { DashboardData } from '../modules/dashboard/types'
+import type { Department } from '../modules/departments/types'
 import { clearSession, getToken } from './storage'
 
 const rawBaseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
@@ -87,6 +88,26 @@ export const updateCategory = async (id: string, name: string) => {
 
 export const deleteCategory = async (id: string) => {
   await api.delete(`/categories/${id}`)
+}
+export const getDepartments = async (): Promise<Department[]> => {
+  const { data } = await api.get<any>('/departments')
+  const payload = data?.data ?? data
+  return Array.isArray(payload) ? payload : payload?.items ?? []
+}
+export const createDepartment = async (payload: Partial<Department>) => {
+  const { data } = await api.post<ApiEnvelope<Department>>('/departments', payload)
+  return data.data
+}
+export const updateDepartment = async (id: string, payload: Partial<Department>) => {
+  const { data } = await api.put<ApiEnvelope<Department>>(`/departments/${id}`, payload)
+  return data.data
+}
+export const deleteDepartment = async (id: string) => {
+  await api.delete(`/departments/${id}`)
+}
+export const toggleDepartmentStatus = async (id: string, isActive: boolean) => {
+  const { data } = await api.patch<ApiEnvelope<Department>>(`/departments/${id}/status`, { isActive })
+  return data.data
 }
 
 export const createMakeModel = async (name: string) => {
