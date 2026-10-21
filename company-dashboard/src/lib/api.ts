@@ -71,7 +71,7 @@ export const fetchDashboard = async (): Promise<DashboardData> => {
     categories: unwrap(categories),
     makeModels: unwrap(makeModels),
     processors: unwrap(processors),
-    assets: unwrap(assets),
+    assets: (unwrap(assets) as any)?.items ?? unwrap(assets) ?? [],
   }
 }
 
