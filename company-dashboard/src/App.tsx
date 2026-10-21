@@ -8,6 +8,7 @@ import type { NameResourceSectionProps } from './modules/catalog/components/Name
 import { emptyNameForm } from './modules/catalog/constants'
 import type { Category, MakeModel, NameForm, Processor } from './modules/catalog/types'
 import DashboardPage from './modules/dashboard/components/DashboardPage'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { Sidebar } from './shared/components/Sidebar'
 import { DepartmentsPage } from './modules/departments/components/DepartmentsPage'
 import { EmployeesPage } from './modules/employees/components/EmployeesPage'
@@ -28,7 +29,6 @@ import {
   deleteCategory,
   deleteMakeModel,
   deleteProcessor,
-  exportAssetsCsvUrl,
   fetchDashboard,
   login,
   updateAsset,
@@ -389,23 +389,13 @@ function App() {
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex-1">
-        <DashboardPage
-        data={data}
-        user={user}
-        loading={loading}
-        notice={notice}
-        dashboardError={dashboardError}
-        onRetry={loadDashboard}
-        onLogout={handleLogout}
-        resources={resourceProps}
-        assets={assetProps}
-      />
-      <div className="mx-auto max-w-6xl space-y-6 p-4">
-        <a href={exportAssetsCsvUrl()} className="inline-block rounded-2xl bg-slate-900 px-4 py-2 text-white">Download CSV</a>
-        <DepartmentsPage canManage={canManage} />
-        <EmployeesPage canManage={canManage} />
-      </div>
+      <div className="flex-1 p-4">
+        <Routes>
+          <Route path="/" element={<DashboardPage data={data} user={user} loading={loading} notice={notice} dashboardError={dashboardError} onRetry={loadDashboard} onLogout={handleLogout} resources={resourceProps} assets={assetProps} />} />
+          <Route path="/departments" element={<DepartmentsPage canManage={canManage} />} />
+          <Route path="/employees" element={<EmployeesPage canManage={canManage} />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </div>
     </div>
   )
