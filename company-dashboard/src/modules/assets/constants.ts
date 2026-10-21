@@ -15,6 +15,10 @@ export const emptyAssetForm: AssetFormValue = {
   serialNumber: '',
   status: 'available',
   transactionDate: '',
+  location: '',
+  condition: 'good',
+  warrantyStartDate: '',
+  warrantyEndDate: '',
 }
 
 export const getDateInputValue = (value?: string) => {

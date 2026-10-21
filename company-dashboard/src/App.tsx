@@ -369,6 +369,10 @@ function App() {
         serialNumber: asset.serialNumber ?? '',
         status: asset.status ?? 'available',
         transactionDate: getDateInputValue(asset.transactionDate),
+        location: asset.location ?? '',
+        condition: asset.condition ?? 'good',
+        warrantyStartDate: getDateInputValue(asset.warrantyStartDate),
+        warrantyEndDate: getDateInputValue(asset.warrantyEndDate),
       })
     },
     onDelete: (id) => handleDelete(id, deleteAsset, 'Asset deleted.'),

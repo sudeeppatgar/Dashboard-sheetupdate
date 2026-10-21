@@ -210,6 +210,25 @@ function AssetForm({
         </label>
       </div>
 
+        <label className="block">
+          <span className="mb-2 block text-sm font-medium text-slate-700">Location</span>
+          <input value={form.location} onChange={(e) => setForm((c) => ({ ...c, location: e.target.value }))} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm" />
+        </label>
+        <label className="block">
+          <span className="mb-2 block text-sm font-medium text-slate-700">Condition</span>
+          <select value={form.condition} onChange={(e) => setForm((c) => ({ ...c, condition: e.target.value }))} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm">
+            {['new','good','fair','damaged','under_repair'].map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </label>
+        <label className="block">
+          <span className="mb-2 block text-sm font-medium text-slate-700">Warranty start</span>
+          <input type="date" value={form.warrantyStartDate} onChange={(e) => setForm((c) => ({ ...c, warrantyStartDate: e.target.value }))} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm" />
+        </label>
+        <label className="block">
+          <span className="mb-2 block text-sm font-medium text-slate-700">Warranty end</span>
+          <input type="date" value={form.warrantyEndDate} onChange={(e) => setForm((c) => ({ ...c, warrantyEndDate: e.target.value }))} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm" />
+        </label>
+
       <div className="mt-4 flex flex-wrap gap-3">
         <button
           type="button"

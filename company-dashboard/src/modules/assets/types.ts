@@ -8,6 +8,11 @@ export type Asset = {
   serialNumber?: string
   status?: AssetStatus
   transactionDate?: string
+  location?: string
+  condition?: string
+  warrantyStartDate?: string
+  warrantyEndDate?: string
+  assignedEmployeeId?: any
   categoryId?: Category
   makeModelId?: MakeModel
   processorId?: Processor
@@ -23,6 +28,10 @@ export type AssetFormValue = {
   serialNumber: string
   status: AssetStatus
   transactionDate: string
+  location: string
+  condition: string
+  warrantyStartDate: string
+  warrantyEndDate: string
 }
 
 export type AssetFormErrors = Partial<Record<keyof AssetFormValue, string>>
