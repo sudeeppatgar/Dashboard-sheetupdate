@@ -27,6 +27,7 @@ import {
   deleteCategory,
   deleteMakeModel,
   deleteProcessor,
+  exportAssetsCsvUrl,
   fetchDashboard,
   login,
   updateAsset,
@@ -398,6 +399,7 @@ function App() {
         assets={assetProps}
       />
       <div className="mx-auto max-w-6xl space-y-6 p-4">
+        <a href={exportAssetsCsvUrl()} className="inline-block rounded-2xl bg-slate-900 px-4 py-2 text-white">Download CSV</a>
         <DepartmentsPage canManage={canManage} />
         <EmployeesPage canManage={canManage} />
       </div>
