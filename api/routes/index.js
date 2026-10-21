@@ -1,4 +1,5 @@
 import { Router } from "express";
+import departments from "./department.routes.js";
 import categories from "./category.routes.js";
 import assets from "./asset.routes.js";
 import makeModels from "./makeModel.routes.js";
@@ -7,6 +8,7 @@ import auth from "./auth.routes.js";
 
 const router = Router();
 
+router.use("/departments", departments);
 router.use("/categories", categories);
 router.use("/assets", assets);
 router.use("/make-models", makeModels);
