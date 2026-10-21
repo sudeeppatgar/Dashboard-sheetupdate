@@ -60,11 +60,13 @@ export const login = async (email: string, password: string) => {
 }
 
 export const fetchDashboard = async (): Promise<DashboardData> => {
-  const [categories, makeModels, processors, assets] = await Promise.all([
+  const [categories, makeModels, processors, assets, departments, employees] = await Promise.all([
     api.get<ApiListEnvelope<Category>>('/categories'),
     api.get<ApiListEnvelope<MakeModel>>('/make-models'),
     api.get<ApiListEnvelope<Processor>>('/processors'),
     api.get<ApiListEnvelope<Asset>>('/assets'),
+    getDepartments(),
+    getEmployees(),
   ])
 
   return {
@@ -72,6 +74,8 @@ export const fetchDashboard = async (): Promise<DashboardData> => {
     makeModels: unwrap(makeModels),
     processors: unwrap(processors),
     assets: (unwrap(assets) as any)?.items ?? unwrap(assets) ?? [],
+    departments,
+    employees,
   }
 }
 

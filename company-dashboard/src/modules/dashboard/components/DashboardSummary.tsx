@@ -12,6 +12,8 @@ function DashboardSummary({ data }: DashboardSummaryProps) {
     { label: 'Make models', value: data.makeModels.length },
     { label: 'Processors', value: data.processors.length },
     { label: 'Assets', value: data.assets.length },
+    { label: 'Departments', value: data.departments.length },
+    { label: 'Employees', value: data.employees.length },
   ]
 
   const assetStatusCounts: AssetStatusCount[] = assetStatusOptions.map((option) => ({
@@ -21,7 +23,7 @@ function DashboardSummary({ data }: DashboardSummaryProps) {
 
   return (
     <>
-      <div className="mt-6 grid gap-3 md:grid-cols-4">
+      <div className="mt-6 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
         {resourceCounts.map((item) => (
           <div
             key={item.label}

@@ -4,6 +4,8 @@ import type { LoginFormValue, Session } from './modules/auth/types'
 import type { AssetManagementProps } from './modules/assets/components/AssetManagement'
 import { emptyAssetFilters, emptyAssetForm, getDateInputValue } from './modules/assets/constants'
 import type { Asset, AssetFilters, AssetFormValue } from './modules/assets/types'
+import type { Department } from './modules/departments/types'
+import type { Employee } from './modules/employees/types'
 import type { NameResourceSectionProps } from './modules/catalog/components/NameResourceSection'
 import CategoriesPage from './modules/catalog/components/CategoriesPage'
 import MakeModelsPage from './modules/catalog/components/MakeModelsPage'
@@ -51,6 +53,8 @@ function App() {
   const [makeModels, setMakeModels] = useState<MakeModel[]>([])
   const [processors, setProcessors] = useState<Processor[]>([])
   const [assets, setAssets] = useState<Asset[]>([])
+  const [departments, setDepartments] = useState<Department[]>([])
+  const [employees, setEmployees] = useState<Employee[]>([])
 
   const [loginForm, setLoginForm] = useState<LoginFormValue>({
     email: 'admin@company.com',
@@ -79,6 +83,8 @@ function App() {
     setMakeModels([])
     setProcessors([])
     setAssets([])
+    setDepartments([])
+    setEmployees([])
     setCategoryForm(emptyNameForm)
     setMakeModelForm(emptyNameForm)
     setProcessorForm(emptyNameForm)
@@ -105,6 +111,8 @@ function App() {
       setMakeModels(data.makeModels)
       setProcessors(data.processors)
       setAssets(data.assets)
+      setDepartments(data.departments)
+      setEmployees(data.employees)
     } catch (error) {
       const status = error && typeof error === 'object' && 'response' in error
         ? (error as { response?: { status?: number; data?: { message?: string } } }).response?.status
@@ -290,7 +298,7 @@ function App() {
     )
   }
 
-  const data: DashboardData = { categories, makeModels, processors, assets }
+  const data: DashboardData = { categories, makeModels, processors, assets, departments, employees }
   const resourceProps = {
     categories: {
       title: 'Categories',
