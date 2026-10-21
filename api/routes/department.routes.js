@@ -8,7 +8,7 @@ import {
   deleteDepartment,
 } from "../controllers/department.controller.js";
 import { protect, restrictTo } from "../middleware/auth.middleware.js";
-import { validate } from "../middleware/validator.middleware.js";
+import { validateBody, validateParams } from "../middleware/validator.middleware.js";
 import {
   createDepartmentValidator,
   updateDepartmentValidator,
@@ -18,10 +18,10 @@ import {
 const router = Router();
 
 router.get("/", protect, getDepartments);
-router.get("/:id", protect, validate(departmentIdValidator, "params"), getDepartment);
-router.post("/", protect, restrictTo("admin"), validate(createDepartmentValidator), createDepartment);
-router.put("/:id", protect, restrictTo("admin"), validate(departmentIdValidator, "params"), validate(updateDepartmentValidator), updateDepartment);
-router.patch("/:id/status", protect, restrictTo("admin"), validate(departmentIdValidator, "params"), toggleDepartmentStatus);
-router.delete("/:id", protect, restrictTo("admin"), validate(departmentIdValidator, "params"), deleteDepartment);
+router.get("/:id", protect, validateParams(departmentIdValidator), getDepartment);
+router.post("/", protect, restrictTo("admin"), validateBody(createDepartmentValidator), createDepartment);
+router.put("/:id", protect, restrictTo("admin"), validateParams(departmentIdValidator), validateBody(updateDepartmentValidator), updateDepartment);
+router.patch("/:id/status", protect, restrictTo("admin"), validateParams(departmentIdValidator), toggleDepartmentStatus);
+router.delete("/:id", protect, restrictTo("admin"), validateParams(departmentIdValidator), deleteDepartment);
 
 export default router;
