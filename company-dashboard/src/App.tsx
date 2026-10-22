@@ -21,10 +21,11 @@ function App() {
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex-1 p-4">
+      <div className="flex-1">
         {notice ? <Notice notice={notice} className="mb-4" /> : null}
         <Routes>
-          <Route path="/" element={<DashboardPage />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/make-models" element={<MakeModelsPage />} />
           <Route path="/processors" element={<ProcessorsPage />} />
