@@ -1,5 +1,3 @@
-import Notice from '../../../shared/components/Notice'
-import type { Notice as NoticeValue } from '../../../shared/types'
 import type { SessionUser } from '../../auth/types'
 import type { DashboardData } from '../types'
 import DashboardSummary from './DashboardSummary'
@@ -7,11 +5,10 @@ import DashboardSummary from './DashboardSummary'
 type DashboardHeaderProps = {
   user: SessionUser | null
   data: DashboardData
-  notice: NoticeValue | null
   onLogout: () => void
 }
 
-function DashboardHeader({ user, data, notice, onLogout }: DashboardHeaderProps) {
+function DashboardHeader({ user, data, onLogout }: DashboardHeaderProps) {
   return (
     <header className="rounded-3xl border border-slate-200 bg-white px-5 py-5 shadow-sm sm:px-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -43,9 +40,6 @@ function DashboardHeader({ user, data, notice, onLogout }: DashboardHeaderProps)
       </div>
 
       <DashboardSummary data={data} />
-
-      {notice ? <Notice notice={notice} className="mt-4" /> : null}
-
     </header>
   )
 }
