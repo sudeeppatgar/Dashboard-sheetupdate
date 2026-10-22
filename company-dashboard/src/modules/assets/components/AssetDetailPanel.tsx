@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getAssetHistory } from '../../../lib/api'
+import { getAssetHistory } from '../api'
 import { assetStatusOptions } from '../constants'
 import type { Asset } from '../types'
 import { formatDate, formatTimestamp } from '../../../shared/utils/formatDate'

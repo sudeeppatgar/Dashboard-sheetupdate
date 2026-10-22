@@ -1,57 +1,114 @@
-import { useMemo, useState, type Dispatch, type SetStateAction } from 'react'
-import AssetFilters from './AssetFilters'
+import { useEffect, useMemo, useState } from 'react'
+import { assignAsset, createAsset, deleteAsset, getAssets, returnAsset, updateAsset } from '../api'
+import { getCategories, getMakeModels, getProcessors } from '../../catalog/api'
+import { getEmployees } from '../../employees/api'
 import AssetDetailPanel from './AssetDetailPanel'
+import AssetFilters from './AssetFilters'
 import AssetForm from './AssetForm'
 import AssetTable from './AssetTable'
 import AssignmentDialog from './AssignmentDialog'
-import { assignAsset, returnAsset } from '../../../lib/api'
-import type { Asset, AssetFilters as AssetFiltersValue, AssetFormValue } from '../types'
+import { useCrudResource } from '../../../shared/hooks/useCrudResource'
+import { getErrorMessage } from '../../../shared/utils/getErrorMessage'
+import { useApp } from '../../../shared/context/useApp'
+import type { Asset, AssetFormValue, AssetFilters as AssetFiltersValue } from '../types'
 import type { Category, MakeModel, Processor } from '../../catalog/types'
 import type { Employee } from '../../employees/types'
+import { emptyAssetForm, emptyAssetFilters, getDateInputValue } from '../constants'
 
-export type AssetManagementProps = {
-  assets: Asset[]
-  categories: Category[]
-  makeModels: MakeModel[]
-  processors: Processor[]
-  employees: Employee[]
-  form: AssetFormValue
-  setForm: Dispatch<SetStateAction<AssetFormValue>>
-  filters: AssetFiltersValue
-  setFilters: Dispatch<SetStateAction<AssetFiltersValue>>
-  editingId: string | null
-  submitting: boolean
-  canManage: boolean
-  onSubmit: () => Promise<void>
-  onEdit: (asset: Asset) => void
-  onDelete: (id: string) => Promise<void>
-  onResetForm: () => void
-  onReload: () => Promise<void>
-}
-
-function AssetManagement({
-  assets,
-  categories,
-  makeModels,
-  processors,
-  employees,
-  form,
-  setForm,
-  filters,
-  setFilters,
-  editingId,
-  submitting,
-  canManage,
-  onSubmit,
-  onEdit,
-  onDelete,
-  onResetForm,
-  onReload,
-}: AssetManagementProps) {
+function AssetManagement() {
+  const { canManage, setNotice } = useApp()
+  const [form, setForm] = useState<AssetFormValue>(emptyAssetForm)
+  const [filters, setFilters] = useState<AssetFiltersValue>(emptyAssetFilters)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null)
   const [assigningAsset, setAssigningAsset] = useState<Asset | null>(null)
   const [returningAsset, setReturningAsset] = useState<Asset | null>(null)
   const [dialogSubmitting, setDialogSubmitting] = useState(false)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [makeModels, setMakeModels] = useState<MakeModel[]>([])
+  const [processors, setProcessors] = useState<Processor[]>([])
+  const [employees, setEmployees] = useState<Employee[]>([])
+
+  const assets = useCrudResource<Asset, AssetFormValue, AssetFormValue>({
+    list: getAssets,
+    create: createAsset,
+    update: updateAsset,
+    remove: deleteAsset,
+  })
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      const [categoryList, makeModelList, processorList, employeeList] = await Promise.all([
+        getCategories(),
+        getMakeModels(),
+        getProcessors(),
+        getEmployees(),
+      ])
+      setCategories(categoryList)
+      setMakeModels(makeModelList)
+      setProcessors(processorList)
+      setEmployees(employeeList)
+    }
+
+    void loadOptions()
+  }, [])
+
+  const handleSubmit = async () => {
+    if (!form.fullName.trim() || !form.categoryId) return
+
+    try {
+      if (editingId) {
+        await assets.update(editingId, form)
+        setEditingId(null)
+      } else {
+        await assets.create(form)
+      }
+      setForm(emptyAssetForm)
+      setNotice({ type: 'success', message: 'Asset saved.' })
+    } catch (error) {
+      setNotice({
+        type: 'error',
+        message: getErrorMessage(error, 'Failed to save asset.'),
+      })
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    const confirmed = window.confirm('Delete this record?')
+    if (!confirmed) return
+
+    try {
+      await assets.remove(id)
+      setNotice({ type: 'success', message: 'Asset deleted.' })
+    } catch (error) {
+      setNotice({
+        type: 'error',
+        message: getErrorMessage(error, 'Delete failed.'),
+      })
+    }
+  }
+
+  const handleEdit = (asset: Asset) => {
+    setEditingId(asset._id)
+    setForm({
+      fullName: asset.fullName,
+      categoryId: asset.categoryId?._id ?? '',
+      makeModelId: asset.makeModelId?._id ?? '',
+      processorId: asset.processorId?._id ?? '',
+      serialNumber: asset.serialNumber ?? '',
+      status: asset.status ?? 'available',
+      transactionDate: getDateInputValue(asset.transactionDate),
+      location: asset.location ?? '',
+      condition: asset.condition ?? 'good',
+      warrantyStartDate: getDateInputValue(asset.warrantyStartDate),
+      warrantyEndDate: getDateInputValue(asset.warrantyEndDate),
+    })
+  }
+
+  const handleResetForm = () => {
+    setEditingId(null)
+    setForm(emptyAssetForm)
+  }
 
   const handleAssign = async (payload: Record<string, unknown>) => {
     if (!assigningAsset) return
@@ -59,7 +116,7 @@ function AssetManagement({
     try {
       await assignAsset(assigningAsset._id, payload)
       setAssigningAsset(null)
-      await onReload()
+      await assets.refresh()
     } finally {
       setDialogSubmitting(false)
     }
@@ -71,7 +128,7 @@ function AssetManagement({
     try {
       await returnAsset(returningAsset._id, payload)
       setReturningAsset(null)
-      await onReload()
+      await assets.refresh()
     } finally {
       setDialogSubmitting(false)
     }
@@ -79,23 +136,23 @@ function AssetManagement({
 
   const categoryOptions = useMemo(
     () => categories.map((item) => ({ value: item._id, label: item.name })),
-    [categories],
+    [categories]
   )
 
   const makeModelOptions = useMemo(
     () => makeModels.map((item) => ({ value: item._id, label: item.name })),
-    [makeModels],
+    [makeModels]
   )
 
   const processorOptions = useMemo(
     () => processors.map((item) => ({ value: item._id, label: item.name })),
-    [processors],
+    [processors]
   )
 
   const filteredAssets = useMemo(() => {
     const search = filters.search.trim().toLowerCase()
 
-    return assets.filter((asset) => {
+    return assets.items.filter((asset) => {
       const assetStatus = asset.status ?? 'available'
       const matchesSearch =
         !search ||
@@ -103,17 +160,15 @@ function AssetManagement({
         asset.serialNumber?.toLowerCase().includes(search)
       const matchesStatus = filters.status === 'all' || assetStatus === filters.status
       const matchesCategory = !filters.categoryId || asset.categoryId?._id === filters.categoryId
-      const matchesMakeModel =
-        !filters.makeModelId || asset.makeModelId?._id === filters.makeModelId
-      const matchesProcessor =
-        !filters.processorId || asset.processorId?._id === filters.processorId
+      const matchesMakeModel = !filters.makeModelId || asset.makeModelId?._id === filters.makeModelId
+      const matchesProcessor = !filters.processorId || asset.processorId?._id === filters.processorId
 
       return matchesSearch && matchesStatus && matchesCategory && matchesMakeModel && matchesProcessor
     })
-  }, [assets, filters])
+  }, [assets.items, filters])
 
   const selectedAsset = selectedAssetId
-    ? assets.find((asset) => asset._id === selectedAssetId)
+    ? assets.items.find((asset) => asset._id === selectedAssetId)
     : undefined
 
   return (
@@ -134,9 +189,9 @@ function AssetManagement({
         makeModelOptions={makeModelOptions}
         processorOptions={processorOptions}
         editingId={editingId}
-        submitting={submitting}
-        onSubmit={onSubmit}
-        onReset={onResetForm}
+        submitting={assets.submitting}
+        onSubmit={handleSubmit}
+        onReset={handleResetForm}
       />
 
       <AssetFilters
@@ -146,17 +201,17 @@ function AssetManagement({
         makeModelOptions={makeModelOptions}
         processorOptions={processorOptions}
         filteredCount={filteredAssets.length}
-        totalCount={assets.length}
+        totalCount={assets.items.length}
       />
 
       <AssetTable
         assets={filteredAssets}
-        totalCount={assets.length}
+        totalCount={assets.items.length}
         canManage={canManage}
-        submitting={submitting}
+        submitting={assets.submitting}
         onViewDetails={(asset) => setSelectedAssetId(asset._id)}
-        onEdit={onEdit}
-        onDelete={(id) => void onDelete(id)}
+        onEdit={handleEdit}
+        onDelete={(id) => void handleDelete(id)}
         onAssign={setAssigningAsset}
         onReturn={setReturningAsset}
       />

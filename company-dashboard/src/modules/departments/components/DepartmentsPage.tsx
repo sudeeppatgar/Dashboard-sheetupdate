@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react'
-import { getDepartments, createDepartment, updateDepartment, deleteDepartment, toggleDepartmentStatus } from '../../../lib/api'
-import type { Department } from '../types'
+import { useApp } from '../../../shared/context/useApp'
+import PageShell from '../../../shared/components/PageShell'
 import EmptyState from '../../../shared/components/EmptyState'
+import {
+  createDepartment,
+  deleteDepartment,
+  getDepartments,
+  toggleDepartmentStatus,
+  updateDepartment,
+} from '../api'
+import type { Department } from '../types'
 
-export function DepartmentsPage({ canManage }: { canManage: boolean }) {
+export function DepartmentsPage() {
+  const { canManage } = useApp()
   const [items, setItems] = useState<Department[]>([])
   const [form, setForm] = useState({ name: '', code: '', description: '', isActive: true })
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -14,7 +23,13 @@ export function DepartmentsPage({ canManage }: { canManage: boolean }) {
     setItems(Array.isArray(data) ? data : [])
   }
 
-  useEffect(() => { void load() }, [])
+  useEffect(() => {
+    const init = async () => {
+      await load()
+    }
+
+    void init()
+  }, [])
 
   const submit = async () => {
     if (!form.name.trim() || !form.code.trim()) return
@@ -47,74 +62,121 @@ export function DepartmentsPage({ canManage }: { canManage: boolean }) {
   }
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight">Departments</h2>
-          <p className="mt-1 text-sm text-slate-500">Manage organizational departments.</p>
-        </div>
-      </div>
-
-      {canManage ? (
-        <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Name" className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400" />
-            <input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="Code" className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400" />
-            <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400" />
-            <button onClick={() => void submit()} disabled={submitting} className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
-              {editingId ? 'Update' : 'Add'}
-            </button>
-            {editingId ? (
-              <button onClick={() => { setEditingId(null); setForm({ name: '', code: '', description: '', isActive: true }) }} className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
-                Reset
-              </button>
-            ) : null}
+    <PageShell>
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight">Departments</h2>
+            <p className="mt-1 text-sm text-slate-500">Manage organizational departments.</p>
           </div>
         </div>
-      ) : (
-        <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          You have read-only access to departments.
-        </div>
-      )}
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
-        <table className="min-w-[640px] w-full border-collapse text-left text-sm">
-          <thead className="bg-slate-100 text-slate-600">
-            <tr>
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Code</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              {canManage ? <th className="px-4 py-3 font-medium">Actions</th> : null}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 bg-white">
-            {items.length === 0 ? (
+        {canManage ? (
+          <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Name"
+                className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+              />
+              <input
+                value={form.code}
+                onChange={(e) => setForm({ ...form, code: e.target.value })}
+                placeholder="Code"
+                className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+              />
+              <input
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="Description"
+                className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+              />
+              <button
+                onClick={() => void submit()}
+                disabled={submitting}
+                className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {editingId ? 'Update' : 'Add'}
+              </button>
+              {editingId ? (
+                <button
+                  onClick={() => {
+                    setEditingId(null)
+                    setForm({ name: '', code: '', description: '', isActive: true })
+                  }}
+                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                >
+                  Reset
+                </button>
+              ) : null}
+            </div>
+          </div>
+        ) : (
+          <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            You have read-only access to departments.
+          </div>
+        )}
+
+        <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
+          <table className="min-w-[640px] w-full border-collapse text-left text-sm">
+            <thead className="bg-slate-100 text-slate-600">
               <tr>
-                <td className="px-4 py-8 text-center text-slate-500" colSpan={canManage ? 4 : 3}>
-                  <EmptyState title="No departments yet" message={canManage ? 'Add a department to get started.' : 'No departments available.'} />
-                </td>
+                <th className="px-4 py-3 font-medium">Name</th>
+                <th className="px-4 py-3 font-medium">Code</th>
+                <th className="px-4 py-3 font-medium">Status</th>
+                {canManage ? <th className="px-4 py-3 font-medium">Actions</th> : null}
               </tr>
-            ) : (
-              items.map((d) => (
-                <tr key={d._id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium text-slate-900">{d.name}</td>
-                  <td className="px-4 py-3 text-slate-600">{d.code}</td>
-                  <td className="px-4 py-3 text-slate-600">{d.isActive ? 'Active' : 'Inactive'}</td>
-                  {canManage ? (
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-2">
-                        <button onClick={() => startEdit(d)} className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-700 transition hover:bg-cyan-100">Edit</button>
-                        <button onClick={() => void toggleDepartmentStatus(d._id, !d.isActive).then(load)} disabled={submitting} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60">Toggle</button>
-                        <button onClick={() => void handleDelete(d._id)} disabled={submitting} className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60">Delete</button>
-                      </div>
-                    </td>
-                  ) : null}
+            </thead>
+            <tbody className="divide-y divide-slate-100 bg-white">
+              {items.length === 0 ? (
+                <tr>
+                  <td className="px-4 py-8 text-center text-slate-500" colSpan={canManage ? 4 : 3}>
+                    <EmptyState
+                      title="No departments yet"
+                      message={canManage ? 'Add a department to get started.' : 'No departments available.'}
+                    />
+                  </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </section>
+              ) : (
+                items.map((d) => (
+                  <tr key={d._id} className="hover:bg-slate-50">
+                    <td className="px-4 py-3 font-medium text-slate-900">{d.name}</td>
+                    <td className="px-4 py-3 text-slate-600">{d.code}</td>
+                    <td className="px-4 py-3 text-slate-600">{d.isActive ? 'Active' : 'Inactive'}</td>
+                    {canManage ? (
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => startEdit(d)}
+                            className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-700 transition hover:bg-cyan-100"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => void toggleDepartmentStatus(d._id, !d.isActive).then(load)}
+                            disabled={submitting}
+                            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Toggle
+                          </button>
+                          <button
+                            onClick={() => void handleDelete(d._id)}
+                            disabled={submitting}
+                            className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    ) : null}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </PageShell>
   )
 }

@@ -1,15 +1,13 @@
-import type { FormEventHandler } from 'react'
+import { useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useApp } from '../../../shared/context/useApp'
 import Notice from '../../../shared/components/Notice'
-import type { Notice as NoticeValue } from '../../../shared/types'
 import type { LoginFormValue } from '../types'
+import { getErrorMessage } from '../../../shared/utils/getErrorMessage'
 
-type LoginPageProps = {
-  form: LoginFormValue
-  notice: NoticeValue | null
-  submitting: boolean
-  onEmailChange: (email: string) => void
-  onPasswordChange: (password: string) => void
-  onSubmit: FormEventHandler<HTMLFormElement>
+const initialForm: LoginFormValue = {
+  email: 'admin@company.com',
+  password: 'admin123',
 }
 
 const highlights = [
@@ -18,14 +16,31 @@ const highlights = [
   ['Secure', 'Bearer token stored locally and attached to API calls.'],
 ] as const
 
-function LoginPage({
-  form,
-  notice,
-  submitting,
-  onEmailChange,
-  onPasswordChange,
-  onSubmit,
-}: LoginPageProps) {
+function LoginPage() {
+  const { signIn, setNotice, notice } = useApp()
+  const navigate = useNavigate()
+  const [form, setForm] = useState<LoginFormValue>(initialForm)
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setSubmitting(true)
+    setNotice(null)
+
+    try {
+      const name = await signIn(form.email, form.password)
+      setNotice({ type: 'success', message: `Welcome back, ${name}.` })
+      navigate('/', { replace: true })
+    } catch (error) {
+      setNotice({
+        type: 'error',
+        message: getErrorMessage(error, 'Login failed. Check your credentials.'),
+      })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-10 text-slate-100 sm:px-6 lg:px-8">
       <div className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-6xl items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
@@ -66,12 +81,12 @@ function LoginPage({
 
           {notice ? <Notice notice={notice} className="mb-4" /> : null}
 
-          <form className="space-y-4" onSubmit={onSubmit}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-slate-700">Email</span>
               <input
                 value={form.email}
-                onChange={(event) => onEmailChange(event.target.value)}
+                onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
                 type="email"
                 className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-cyan-400 focus:bg-white"
                 placeholder="admin@company.com"
@@ -82,7 +97,7 @@ function LoginPage({
               <span className="mb-2 block text-sm font-medium text-slate-700">Password</span>
               <input
                 value={form.password}
-                onChange={(event) => onPasswordChange(event.target.value)}
+                onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
                 type="password"
                 className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-cyan-400 focus:bg-white"
                 placeholder="admin123"

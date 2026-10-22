@@ -1,55 +1,65 @@
-import type { SessionUser } from '../../auth/types'
-import AssetManagement, {
-  type AssetManagementProps,
-} from '../../assets/components/AssetManagement'
-import type { Notice } from '../../../shared/types'
+import { useCallback, useEffect, useState } from 'react'
+import { useApp } from '../../../shared/context/useApp'
+import PageShell from '../../../shared/components/PageShell'
+import { getErrorMessage } from '../../../shared/utils/getErrorMessage'
 import ErrorState from '../../../shared/components/ErrorState'
 import LoadingState from '../../../shared/components/LoadingState'
+import { getDashboard } from '../api'
 import type { DashboardData } from '../types'
 import DashboardHeader from './DashboardHeader'
+import AssetManagement from '../../assets/components/AssetManagement'
 
-type DashboardPageProps = {
-  data: DashboardData
-  user: SessionUser | null
-  loading: boolean
-  notice: Notice | null
-  dashboardError: string
-  onRetry: () => Promise<void>
-  onLogout: () => void
-  assets: AssetManagementProps
-}
+function DashboardPage() {
+  const { user, signOut } = useApp()
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [dashboardError, setDashboardError] = useState('')
 
-function DashboardPage({
-  data,
-  user,
-  loading,
-  notice,
-  dashboardError,
-  onRetry,
-  onLogout,
-  assets,
-}: DashboardPageProps) {
+  const loadDashboard = useCallback(async () => {
+    setLoading(true)
+    setDashboardError('')
+
+    try {
+      const data = await getDashboard()
+      setData(data)
+    } catch (error) {
+      const status =
+        error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { status?: number } }).response?.status
+          : undefined
+
+      if (status === 401) {
+        signOut()
+      } else {
+        setDashboardError(getErrorMessage(error, 'Unable to load dashboard data.'))
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [signOut])
+
+  useEffect(() => {
+    const init = async () => {
+      await loadDashboard()
+    }
+
+    void init()
+  }, [loadDashboard])
+
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-4 text-slate-900 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <DashboardHeader
-          user={user}
-          data={data}
-          notice={notice}
-          onLogout={onLogout}
-        />
+    <PageShell>
+      {data ? <DashboardHeader user={user} data={data} onLogout={signOut} /> : null}
 
-        {loading ? (
-          <LoadingState message="Loading dashboard data..." />
-        ) : dashboardError ? (
-          <ErrorState message={dashboardError} onRetry={onRetry} />
-        ) : (
-          <div className="space-y-6">
-            <AssetManagement {...assets} />
-          </div>
-        )}
-      </div>
-    </main>
+      {loading ? (
+        <LoadingState message="Loading dashboard data..." />
+      ) : dashboardError ? (
+        <ErrorState message={dashboardError} onRetry={loadDashboard} />
+      ) : (
+        <div className="space-y-6">
+          <AssetManagement />
+        </div>
+      )}
+    </PageShell>
   )
 }
 
