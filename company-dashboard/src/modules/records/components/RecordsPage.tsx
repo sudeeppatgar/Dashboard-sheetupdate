@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import PageShell from '../../../shared/components/PageShell'
 import EmptyState from '../../../shared/components/EmptyState'
 import { useApp } from '../../../shared/context/useApp'
@@ -26,31 +26,168 @@ import {
 import { dateInputValue, emptyRecordFilters, emptyRecordForm } from '../constants'
 import type { RecordAssignmentHistory, RecordFilters, RecordFormValue, WorkspaceRecord } from '../types'
 
+const inputClass = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100'
+const secondaryButtonClass = 'rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50'
+const primaryButtonClass = 'rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50'
+
 const getId = (value?: { _id?: string } | string) => typeof value === 'string' ? value : value?._id ?? ''
 const getName = (value?: { name?: string } | string) => typeof value === 'string' ? value : value?.name ?? '—'
 
 function Field({ definition, value, onChange }: { definition: CustomFieldDefinition; value: unknown; onChange: (value: unknown) => void }) {
-  const common = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-cyan-400'
-  if (definition.type === 'multiline') return <label className="block"><span className="mb-2 block text-sm font-medium text-slate-700">{definition.label}</span><textarea rows={3} value={String(value ?? '')} onChange={(e) => onChange(e.target.value)} className={common} required={definition.required} /></label>
-  if (definition.type === 'boolean') return <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={Boolean(value)} onChange={(e) => onChange(e.target.checked)} />{definition.label}</label>
-  if (definition.type === 'select') return <label className="block"><span className="mb-2 block text-sm font-medium text-slate-700">{definition.label}</span><select value={String(value ?? '')} onChange={(e) => onChange(e.target.value)} className={common} required={definition.required}><option value="">Select {definition.label.toLowerCase()}</option>{(definition.options ?? []).map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
-  return <label className="block"><span className="mb-2 block text-sm font-medium text-slate-700">{definition.label}</span><input type={definition.type === 'date' ? 'date' : definition.type === 'number' ? 'number' : 'text'} value={String(value ?? '')} onChange={(e) => onChange(definition.type === 'number' ? (e.target.value === '' ? '' : Number(e.target.value)) : e.target.value)} className={common} required={definition.required} /></label>
+  if (definition.type === 'boolean') {
+    return (
+      <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+        <input type="checkbox" checked={Boolean(value)} onChange={(event) => onChange(event.target.checked)} className="mt-0.5 h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500" />
+        <span>
+          <span className="block font-medium text-slate-800">{definition.label}{definition.required ? <span className="ml-1 text-rose-500">*</span> : null}</span>
+          <span className="mt-1 block text-xs text-slate-500">Yes or no</span>
+        </span>
+      </label>
+    )
+  }
+
+  const commonProps = {
+    value: String(value ?? ''),
+    onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => onChange(definition.type === 'number' ? (event.target.value === '' ? '' : Number(event.target.value)) : event.target.value),
+    className: inputClass,
+    required: definition.required,
+  }
+
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-sm font-medium text-slate-800">{definition.label}{definition.required ? <span className="ml-1 text-rose-500">*</span> : null}</span>
+      {definition.type === 'multiline' ? <textarea {...commonProps} rows={3} /> : definition.type === 'select' ? (
+        <select {...commonProps}>
+          <option value="">Select {definition.label.toLowerCase()}</option>
+          {(definition.options ?? []).map((option) => <option key={option} value={option}>{option}</option>)}
+        </select>
+      ) : <input {...commonProps} type={definition.type === 'date' ? 'date' : definition.type === 'number' ? 'number' : 'text'} />}
+    </label>
+  )
 }
 
 function AssignmentDialog({ record, people, mode, submitting, onClose, onSubmit }: { record: WorkspaceRecord; people: Person[]; mode: 'assign' | 'return'; submitting: boolean; onClose: () => void; onSubmit: (payload: Record<string, unknown>) => Promise<void> }) {
   const [personId, setPersonId] = useState('')
   const [date, setDate] = useState('')
   const [notes, setNotes] = useState('')
-  useEffect(() => { const close = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }; window.addEventListener('keydown', close); return () => window.removeEventListener('keydown', close) }, [onClose])
-  const submit = async (event: React.FormEvent) => { event.preventDefault(); if (mode === 'assign' && !personId) return; await onSubmit(mode === 'assign' ? { personId, assignedAt: date || undefined, notes: notes || undefined } : { returnedAt: date || undefined, returnNotes: notes || undefined }) }
-  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}><section className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl" role="dialog" aria-modal="true"><div className="flex items-start justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700">{mode === 'assign' ? 'Assign' : 'Return'} {domainConfig.recordSingular.toLowerCase()}</p><h2 className="mt-1 text-2xl font-semibold">{record.name}</h2></div><button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-3 py-2 text-sm">Close</button></div><form onSubmit={submit} className="mt-6 space-y-4">{mode === 'assign' ? <label className="block"><span className="mb-2 block text-sm font-medium">{domainConfig.personSingular}</span><select value={personId} onChange={(e) => setPersonId(e.target.value)} required className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm"><option value="">Select {domainConfig.personSingular.toLowerCase()}</option>{people.filter((person) => person.isActive).map((person) => <option key={person._id} value={person._id}>{person.name}{person.reference ? ` (${person.reference})` : ''}</option>)}</select></label> : null}<label className="block"><span className="mb-2 block text-sm font-medium">{mode === 'assign' ? 'Assignment date' : 'Return date'}</span><input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm" /></label><label className="block"><span className="mb-2 block text-sm font-medium">Notes</span><textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm" /></label><div className="flex justify-end gap-3"><button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-4 py-2 text-sm">Cancel</button><button type="submit" disabled={submitting} className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">{submitting ? 'Saving...' : mode === 'assign' ? 'Assign' : 'Return'}</button></div></form></section></div>
+
+  useEffect(() => {
+    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
+    window.addEventListener('keydown', close)
+    return () => window.removeEventListener('keydown', close)
+  }, [onClose])
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (mode === 'assign' && !personId) return
+    await onSubmit(mode === 'assign'
+      ? { personId, assignedAt: date || undefined, notes: notes.trim() || undefined }
+      : { returnedAt: date || undefined, returnNotes: notes.trim() || undefined })
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
+      <section className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="assignment-title">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700">{mode === 'assign' ? 'Assign record' : 'Return record'}</p>
+            <h2 id="assignment-title" className="mt-1 text-2xl font-semibold text-slate-950">{record.name}</h2>
+            <p className="mt-1 text-sm text-slate-500">{mode === 'assign' ? 'Choose who will own this record.' : 'Close the current assignment and add an optional note.'}</p>
+          </div>
+          <button type="button" onClick={onClose} className={secondaryButtonClass}>Close</button>
+        </div>
+        <form onSubmit={submit} className="mt-6 space-y-4">
+          {mode === 'assign' ? (
+            <label className="block">
+              <span className="mb-1.5 block text-sm font-medium text-slate-800">Assign to <span className="text-rose-500">*</span></span>
+              <select value={personId} onChange={(event) => setPersonId(event.target.value)} required className={inputClass}>
+                <option value="">Select a person</option>
+                {people.filter((person) => person.isActive).map((person) => <option key={person._id} value={person._id}>{person.name}{person.reference ? ` (${person.reference})` : ''}</option>)}
+              </select>
+            </label>
+          ) : null}
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-slate-800">{mode === 'assign' ? 'Assignment date' : 'Return date'}</span>
+            <input type="date" value={date} onChange={(event) => setDate(event.target.value)} className={inputClass} />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-slate-800">Notes</span>
+            <textarea rows={3} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Add context for the next person" className={inputClass} />
+          </label>
+          <div className="flex justify-end gap-3 border-t border-slate-200 pt-4">
+            <button type="button" onClick={onClose} className={secondaryButtonClass}>Cancel</button>
+            <button type="submit" disabled={submitting} className={primaryButtonClass}>{submitting ? 'Saving…' : mode === 'assign' ? 'Assign record' : 'Return record'}</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  )
 }
 
-function RecordDetails({ record, onClose }: { record: WorkspaceRecord; onClose: () => void }) {
-  const [history, setHistory] = useState<RecordAssignmentHistory[]>([])
-  useEffect(() => { void getRecordHistory(record._id).then(setHistory).catch(() => setHistory([])) }, [record._id])
-  const type = typeof record.recordTypeId === 'string' ? undefined : record.recordTypeId
-  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}><section className="max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl" role="dialog" aria-modal="true"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700">{domainConfig.recordSingular} details</p><h2 className="mt-1 text-2xl font-semibold">{record.name}</h2><p className="mt-1 text-sm text-slate-500">{getName(record.recordTypeId)}</p></div><button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-3 py-2 text-sm">Close</button></div><dl className="mt-6 grid gap-3 sm:grid-cols-2">{[[domainConfig.identifierLabel, record.reference || 'Not provided'], ['Status', record.status], [domainConfig.categorySingular, getName(record.categoryId)], [domainConfig.groupSingular, getName(record.groupId)], [domainConfig.personSingular, getName(record.personId)], ['Location', record.location || 'Not provided'], [domainConfig.acquisitionDateLabel, formatDate(record.acquiredAt)], ['Created by', record.createdBy?.name || '—'], ['Created', formatTimestamp(record.createdAt)], ['Last updated', formatTimestamp(record.updatedAt)]].map(([label, value]) => <div key={label} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"><dt className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{label}</dt><dd className="mt-1 text-sm font-medium">{value}</dd></div>)}</dl>{type?.fields.length ? <div className="mt-6"><h3 className="text-sm font-semibold">Custom fields</h3><dl className="mt-2 grid gap-3 sm:grid-cols-2">{type.fields.map((field) => <div key={field.key} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"><dt className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{field.label}</dt><dd className="mt-1 text-sm">{String(record.customFields?.[field.key] ?? '—')}</dd></div>)}</dl></div> : null}<div className="mt-6"><h3 className="text-sm font-semibold">Assignment history</h3><ul className="mt-2 space-y-2">{history.length ? history.map((item) => <li key={item._id} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">{item.personId?.name ?? domainConfig.personSingular} — assigned {formatDate(item.assignedAt)}{item.returnedAt ? `, returned ${formatDate(item.returnedAt)}` : ''}</li>) : <li className="text-sm text-slate-500">No assignment history.</li>}</ul></div></section></div>
+function RecordDetails({ record, recordTypes, onClose }: { record: WorkspaceRecord; recordTypes: RecordType[]; onClose: () => void }) {
+  const [history, setHistory] = useState<RecordAssignmentHistory[] | null>(null)
+  const populatedType = typeof record.recordTypeId === 'string' ? undefined : record.recordTypeId
+  const type = populatedType ?? recordTypes.find((item) => item._id === getId(record.recordTypeId))
+
+  useEffect(() => {
+    void getRecordHistory(record._id).then(setHistory).catch(() => setHistory([]))
+  }, [record._id])
+
+  const details = [
+    [domainConfig.identifierLabel, record.reference || 'Not provided'],
+    ['Status', record.status],
+    [domainConfig.categorySingular, getName(record.categoryId)],
+    [domainConfig.groupSingular, getName(record.groupId)],
+    [domainConfig.personSingular, getName(record.personId)],
+    ['Location', record.location || 'Not provided'],
+    [domainConfig.acquisitionDateLabel, formatDate(record.acquiredAt)],
+    ['Created by', record.createdBy?.name || '—'],
+    ['Created', formatTimestamp(record.createdAt)],
+    ['Last updated', formatTimestamp(record.updatedAt)],
+  ]
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
+      <section className="max-h-[calc(100vh-2rem)] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl sm:p-8" role="dialog" aria-modal="true" aria-labelledby="record-details-title">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700">{domainConfig.recordSingular} details</p>
+            <h2 id="record-details-title" className="mt-1 text-2xl font-semibold text-slate-950">{record.name}</h2>
+            <p className="mt-1 text-sm text-slate-500">{getName(record.recordTypeId)}</p>
+          </div>
+          <button type="button" onClick={onClose} className={secondaryButtonClass}>Close</button>
+        </div>
+
+        <dl className="mt-6 grid gap-3 sm:grid-cols-2">
+          {details.map(([label, value]) => <div key={label} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"><dt className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{label}</dt><dd className="mt-1 text-sm font-medium text-slate-800">{value}</dd></div>)}
+        </dl>
+
+        {type?.fields.length ? (
+          <div className="mt-6">
+            <h3 className="font-semibold text-slate-950">Additional information</h3>
+            <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+              {type.fields.map((field) => <div key={field.key} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"><dt className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{field.label}</dt><dd className="mt-1 text-sm font-medium text-slate-800">{String(record.customFields?.[field.key] ?? 'Not provided')}</dd></div>)}
+            </dl>
+          </div>
+        ) : null}
+
+        <div className="mt-6 border-t border-slate-200 pt-6">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700">History</p>
+              <h3 className="mt-1 font-semibold text-slate-950">Assignment history</h3>
+            </div>
+            {history ? <span className="text-xs text-slate-400">{history.length} {history.length === 1 ? 'entry' : 'entries'}</span> : null}
+          </div>
+          {history === null ? <p className="mt-3 text-sm text-slate-500">Loading history…</p> : history.length === 0 ? <p className="mt-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">No assignment history yet.</p> : (
+            <div className="mt-3 space-y-3">
+              {history.map((entry) => <div key={entry._id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm"><div className="flex flex-wrap justify-between gap-2"><span className="font-medium text-slate-800">{entry.personId?.name ?? 'Unassigned'}</span><span className="text-xs text-slate-500">{entry.returnedAt ? `Returned ${formatDate(entry.returnedAt)}` : `Assigned ${formatDate(entry.assignedAt)}`}</span></div>{entry.notes || entry.returnNotes ? <p className="mt-2 text-slate-600">{entry.returnNotes || entry.notes}</p> : null}</div>)}
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  )
 }
 
 export default function RecordsPage() {
@@ -60,8 +197,8 @@ export default function RecordsPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [groups, setGroups] = useState<Group[]>([])
   const [people, setPeople] = useState<Person[]>([])
-  const [form, setForm] = useState<RecordFormValue>(emptyRecordForm)
-  const [filters, setFilters] = useState<RecordFilters>(emptyRecordFilters)
+  const [form, setForm] = useState<RecordFormValue>({ ...emptyRecordForm })
+  const [filters, setFilters] = useState<RecordFilters>({ ...emptyRecordFilters })
   const [editingId, setEditingId] = useState<string | null>(null)
   const [selected, setSelected] = useState<WorkspaceRecord | null>(null)
   const [assigning, setAssigning] = useState<{ record: WorkspaceRecord; mode: 'assign' | 'return' } | null>(null)
@@ -70,24 +207,280 @@ export default function RecordsPage() {
 
   const load = useCallback(async () => {
     const [records, types, categoryList, groupList, peopleList] = await Promise.all([getRecords(), getRecordTypes(), getCategories(), getGroups(), getPeople()])
-    setItems(records.items); setRecordTypes(types); setCategories(categoryList); setGroups(groupList); setPeople(peopleList)
+    setItems(records.items)
+    setRecordTypes(types)
+    setCategories(categoryList)
+    setGroups(groupList)
+    setPeople(peopleList)
   }, [])
+
   useEffect(() => {
     const init = async () => {
-      try { await load() } catch (error) { setNotice({ type: 'error', message: getErrorMessage(error, 'Unable to load records.') }) }
+      try {
+        await load()
+      } catch (error) {
+        setNotice({ type: 'error', message: getErrorMessage(error, `Unable to load ${domainConfig.recordPlural.toLowerCase()}.`) })
+      }
     }
     void init()
   }, [load, setNotice])
 
   const selectedType = recordTypes.find((type) => type._id === form.recordTypeId)
-  const filtered = useMemo(() => items.filter((item) => { const search = filters.search.trim().toLowerCase(); const typeId = getId(item.recordTypeId); const categoryId = getId(item.categoryId); return (!search || item.name.toLowerCase().includes(search) || item.reference?.toLowerCase().includes(search)) && (filters.status === 'all' || item.status === filters.status) && (!filters.categoryId || categoryId === filters.categoryId) && (!filters.recordTypeId || typeId === filters.recordTypeId) }), [items, filters])
-  const reset = () => { setEditingId(null); setForm({ ...emptyRecordForm, recordTypeId: recordTypes[0]?._id ?? '', status: recordTypes[0]?.statuses[0]?.key ?? '' }) }
-  const submit = async () => { if (!form.name.trim() || !form.recordTypeId || !form.status) return; setSubmitting(true); try { if (editingId) await updateRecord(editingId, form); else await createRecord(form); reset(); await load(); setNotice({ type: 'success', message: `${domainConfig.recordSingular} saved.` }) } catch (error) { setNotice({ type: 'error', message: getErrorMessage(error, `Unable to save ${domainConfig.recordSingular.toLowerCase()}.`) }) } finally { setSubmitting(false) } }
-  const remove = async (id: string) => { if (!window.confirm(`Delete this ${domainConfig.recordSingular.toLowerCase()}?`)) return; setSubmitting(true); try { await deleteRecord(id); await load() } catch (error) { setNotice({ type: 'error', message: getErrorMessage(error, 'Unable to delete record.') }) } finally { setSubmitting(false) } }
-  const startEdit = (item: WorkspaceRecord) => { setEditingId(item._id); setForm({ recordTypeId: getId(item.recordTypeId), name: item.name, reference: item.reference ?? '', status: item.status, categoryId: getId(item.categoryId), groupId: getId(item.groupId), location: item.location ?? '', acquiredAt: dateInputValue(item.acquiredAt), customFields: item.customFields ?? {} }) }
-  const submitAssignment = async (payload: Record<string, unknown>) => { if (!assigning) return; setSubmitting(true); try { if (assigning.mode === 'assign') await assignRecord(assigning.record._id, payload); else await returnRecord(assigning.record._id, payload); setAssigning(null); await load() } catch (error) { setNotice({ type: 'error', message: getErrorMessage(error, 'Unable to update assignment.') }) } finally { setSubmitting(false) } }
-  const handleExport = async () => { setExporting(true); try { await downloadRecordsCsv(filters.status !== 'all' ? { status: filters.status } : undefined) } catch (error) { setNotice({ type: 'error', message: getErrorMessage(error, 'Unable to export records.') }) } finally { setExporting(false) } }
-  const statusOptions = selectedType?.statuses ?? []
+  const statusOptions = useMemo(() => {
+    const statuses = recordTypes.flatMap((type) => type.statuses.map((status) => ({ key: status.key, label: status.label })))
+    return Array.from(new Map(statuses.map((status) => [status.key, status])).values())
+  }, [recordTypes])
 
-  return <PageShell><section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-xl font-semibold">{domainConfig.recordPlural}</h2><p className="mt-1 text-sm text-slate-500">Manage records using configurable types, fields, groups, people, and lifecycle statuses.</p></div><button type="button" onClick={() => void handleExport()} disabled={exporting} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium disabled:opacity-60">{exporting ? 'Exporting...' : 'Export CSV'}</button></div>{canManage ? <div className="mt-5 grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-2"><label className="block"><span className="mb-2 block text-sm font-medium">{domainConfig.typeSingular}</span><select value={form.recordTypeId} onChange={(e) => { const type = recordTypes.find((item) => item._id === e.target.value); setForm((current) => ({ ...current, recordTypeId: e.target.value, status: type?.statuses[0]?.key ?? '', customFields: {} })) }} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm"><option value="">Select {domainConfig.typeSingular.toLowerCase()}</option>{recordTypes.filter((type) => type.isActive).map((type) => <option key={type._id} value={type._id}>{type.name}</option>)}</select></label><label className="block"><span className="mb-2 block text-sm font-medium">Name</span><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={`Enter ${domainConfig.recordSingular.toLowerCase()} name`} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm" /></label><label className="block"><span className="mb-2 block text-sm font-medium">{domainConfig.identifierLabel}</span><input value={form.reference} onChange={(e) => setForm({ ...form, reference: e.target.value })} placeholder="Optional reference" className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm" /></label><label className="block"><span className="mb-2 block text-sm font-medium">Status</span><select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm">{statusOptions.map((status) => <option key={status.key} value={status.key}>{status.label}</option>)}</select></label><label className="block"><span className="mb-2 block text-sm font-medium">{domainConfig.categorySingular}</span><select value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm"><option value="">No {domainConfig.categorySingular.toLowerCase()}</option>{categories.map((category) => <option key={category._id} value={category._id}>{category.name}</option>)}</select></label><label className="block"><span className="mb-2 block text-sm font-medium">{domainConfig.groupSingular}</span><select value={form.groupId} onChange={(e) => setForm({ ...form, groupId: e.target.value })} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm"><option value="">No {domainConfig.groupSingular.toLowerCase()}</option>{groups.map((group) => <option key={group._id} value={group._id}>{group.name}</option>)}</select></label><label className="block"><span className="mb-2 block text-sm font-medium">Location</span><input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm" /></label><label className="block"><span className="mb-2 block text-sm font-medium">{domainConfig.acquisitionDateLabel}</span><input type="date" value={form.acquiredAt} onChange={(e) => setForm({ ...form, acquiredAt: e.target.value })} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm" /></label>{selectedType?.fields.map((field) => <Field key={field.key} definition={field} value={form.customFields[field.key]} onChange={(value) => setForm((current) => ({ ...current, customFields: { ...current.customFields, [field.key]: value } }))} />)}<div className="flex gap-3 md:col-span-2"><button type="button" onClick={() => void submit()} disabled={submitting} className="rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white disabled:opacity-60">{editingId ? 'Update' : 'Add'} {domainConfig.recordSingular.toLowerCase()}</button>{editingId ? <button type="button" onClick={reset} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm">Reset</button> : null}</div></div> : null}<div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4"><div className="grid gap-3 md:grid-cols-4"><input value={filters.search} onChange={(e) => setFilters({ ...filters, search: e.target.value })} placeholder={`Search ${domainConfig.recordPlural.toLowerCase()}`} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm" /><select value={filters.recordTypeId} onChange={(e) => setFilters({ ...filters, recordTypeId: e.target.value })} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm"><option value="">All {domainConfig.typePlural.toLowerCase()}</option>{recordTypes.map((type) => <option key={type._id} value={type._id}>{type.name}</option>)}</select><select value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm"><option value="all">All statuses</option>{Array.from(new Map(recordTypes.flatMap((type) => type.statuses.map((status) => [status.key, status]))).values()).map((status) => <option key={status.key} value={status.key}>{status.label}</option>)}</select><button type="button" onClick={() => setFilters(emptyRecordFilters)} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm">Clear filters</button></div><p className="mt-3 text-sm text-slate-500">Showing {filtered.length} of {items.length} {domainConfig.recordPlural.toLowerCase()}</p></div><div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200"><table className="min-w-[1100px] w-full text-left text-sm"><thead className="bg-slate-100 text-slate-600"><tr><th className="px-4 py-3">{domainConfig.recordSingular}</th><th className="px-4 py-3">{domainConfig.typeSingular}</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">{domainConfig.identifierLabel}</th><th className="px-4 py-3">{domainConfig.categorySingular}</th><th className="px-4 py-3">{domainConfig.groupSingular}</th><th className="px-4 py-3">{domainConfig.personSingular}</th>{canManage ? <th className="px-4 py-3">Actions</th> : null}</tr></thead><tbody className="divide-y divide-slate-100">{filtered.length === 0 ? <tr><td colSpan={canManage ? 8 : 7} className="px-4 py-8"><EmptyState title={items.length ? `No matching ${domainConfig.recordPlural.toLowerCase()}` : `No ${domainConfig.recordPlural.toLowerCase()} yet`} message={canManage ? `Add a ${domainConfig.recordSingular.toLowerCase()} or create a ${domainConfig.typeSingular.toLowerCase()} first.` : `No ${domainConfig.recordPlural.toLowerCase()} are available.`} /></td></tr> : filtered.map((item) => { const type = typeof item.recordTypeId === 'string' ? recordTypes.find((candidate) => candidate._id === item.recordTypeId) : item.recordTypeId; const canAssign = canManage && type?.assignment?.enabled && item.status === type.assignment.availableStatus; const canReturn = canManage && type?.assignment?.enabled && item.status === type.assignment.assignedStatus; return <tr key={item._id} className="hover:bg-slate-50"><td className="px-4 py-3"><button type="button" onClick={() => setSelected(item)} className="text-left font-medium text-cyan-700 hover:text-cyan-900">{item.name}<span className="block text-xs text-slate-500">View details</span></button></td><td className="px-4 py-3 text-slate-600">{getName(item.recordTypeId)}</td><td className="px-4 py-3 text-slate-600">{type?.statuses.find((status) => status.key === item.status)?.label ?? item.status}</td><td className="px-4 py-3 text-slate-600">{item.reference || '—'}</td><td className="px-4 py-3 text-slate-600">{getName(item.categoryId)}</td><td className="px-4 py-3 text-slate-600">{getName(item.groupId)}</td><td className="px-4 py-3 text-slate-600">{getName(item.personId)}</td>{canManage ? <td className="px-4 py-3"><div className="flex flex-wrap gap-2"><button type="button" onClick={() => startEdit(item)} className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs text-cyan-700">Edit</button>{canAssign ? <button type="button" onClick={() => setAssigning({ record: item, mode: 'assign' })} className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">Assign</button> : null}{canReturn ? <button type="button" onClick={() => setAssigning({ record: item, mode: 'return' })} className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">Return</button> : null}<button type="button" onClick={() => void remove(item._id)} disabled={submitting} className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">Delete</button></div></td> : null}</tr> })}</tbody></table></div></section>{selected ? <RecordDetails record={selected} onClose={() => setSelected(null)} /> : null}{assigning ? <AssignmentDialog record={assigning.record} people={people} mode={assigning.mode} submitting={submitting} onClose={() => setAssigning(null)} onSubmit={submitAssignment} /> : null}</PageShell>
+  const filtered = useMemo(() => items.filter((item) => {
+    const search = filters.search.trim().toLowerCase()
+    const typeId = getId(item.recordTypeId)
+    const categoryId = getId(item.categoryId)
+    return (!search || item.name.toLowerCase().includes(search) || item.reference?.toLowerCase().includes(search))
+      && (filters.status === 'all' || item.status === filters.status)
+      && (!filters.categoryId || categoryId === filters.categoryId)
+      && (!filters.recordTypeId || typeId === filters.recordTypeId)
+  }), [items, filters])
+
+  const getRecordType = (record: WorkspaceRecord) => {
+    const populated = typeof record.recordTypeId === 'string' ? undefined : record.recordTypeId
+    return populated ?? recordTypes.find((type) => type._id === getId(record.recordTypeId))
+  }
+
+  const getStatusLabel = (record: WorkspaceRecord) => getRecordType(record)?.statuses.find((status) => status.key === record.status)?.label ?? domainConfig.statusLabels[record.status] ?? record.status
+
+  const reset = () => {
+    const firstType = recordTypes.find((type) => type.isActive) ?? recordTypes[0]
+    setEditingId(null)
+    setForm({ ...emptyRecordForm, recordTypeId: firstType?._id ?? '', status: firstType?.statuses[0]?.key ?? '' })
+  }
+
+  const submit = async () => {
+    if (!form.name.trim()) {
+      setNotice({ type: 'error', message: `Give this ${domainConfig.recordSingular.toLowerCase()} a name.` })
+      return
+    }
+    if (!form.recordTypeId || !form.status) {
+      setNotice({ type: 'error', message: `Choose a ${domainConfig.typeSingular.toLowerCase()} and a status before saving.` })
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      if (editingId) await updateRecord(editingId, form)
+      else await createRecord(form)
+      reset()
+      await load()
+      setNotice({ type: 'success', message: `${domainConfig.recordSingular} saved.` })
+    } catch (error) {
+      setNotice({ type: 'error', message: getErrorMessage(error, `Unable to save ${domainConfig.recordSingular.toLowerCase()}.`) })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const startEdit = (item: WorkspaceRecord) => {
+    setEditingId(item._id)
+    setForm({
+      recordTypeId: getId(item.recordTypeId),
+      name: item.name,
+      reference: item.reference ?? '',
+      status: item.status,
+      categoryId: getId(item.categoryId),
+      groupId: getId(item.groupId),
+      location: item.location ?? '',
+      acquiredAt: dateInputValue(item.acquiredAt),
+      customFields: item.customFields ?? {},
+    })
+    window.requestAnimationFrame(() => document.getElementById('record-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
+
+  const remove = async (id: string) => {
+    if (!window.confirm(`Delete this ${domainConfig.recordSingular.toLowerCase()}?`)) return
+    setSubmitting(true)
+    try {
+      await deleteRecord(id)
+      await load()
+      setNotice({ type: 'success', message: `${domainConfig.recordSingular} deleted.` })
+    } catch (error) {
+      setNotice({ type: 'error', message: getErrorMessage(error, `Unable to delete ${domainConfig.recordSingular.toLowerCase()}.`) })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const submitAssignment = async (payload: Record<string, unknown>) => {
+    if (!assigning) return
+    setSubmitting(true)
+    try {
+      if (assigning.mode === 'assign') await assignRecord(assigning.record._id, payload)
+      else await returnRecord(assigning.record._id, payload)
+      setAssigning(null)
+      await load()
+      setNotice({ type: 'success', message: assigning.mode === 'assign' ? 'Record assigned.' : 'Record returned.' })
+    } catch (error) {
+      setNotice({ type: 'error', message: getErrorMessage(error, 'Unable to update assignment.') })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      const exportFilters = Object.fromEntries(Object.entries(filters).filter(([key, value]) => key !== 'status' ? Boolean(value) : value !== 'all'))
+      await downloadRecordsCsv(exportFilters)
+      setNotice({ type: 'success', message: `${domainConfig.recordPlural} exported.` })
+    } catch (error) {
+      setNotice({ type: 'error', message: getErrorMessage(error, `Unable to export ${domainConfig.recordPlural.toLowerCase()}.`) })
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  return (
+    <PageShell>
+      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 px-5 py-7 text-white sm:px-8">
+          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">Workspace activity</p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight">Manage your {domainConfig.recordPlural.toLowerCase()}</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Create, search, update, assign, and track everything your workspace needs to manage.</p>
+            </div>
+            <button type="button" onClick={() => void handleExport()} disabled={exporting} className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/20 disabled:opacity-50">{exporting ? 'Preparing export…' : 'Export visible records'}</button>
+          </div>
+        </div>
+
+        {canManage ? (
+          <form id="record-form" onSubmit={(event) => { event.preventDefault(); void submit() }} className="space-y-6 border-b border-slate-200 p-5 sm:p-8">
+            <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700">{editingId ? 'Edit record' : 'Create a record'}</p>
+                <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">{editingId ? `Update this ${domainConfig.recordSingular.toLowerCase()}` : `Add a new ${domainConfig.recordSingular.toLowerCase()}`}</h3>
+                <p className="mt-1 text-sm text-slate-500">Start with the type and name. The rest of the form adapts to the type you choose.</p>
+              </div>
+              {editingId ? <button type="button" onClick={reset} className={secondaryButtonClass}>Cancel editing</button> : null}
+            </div>
+
+            {recordTypes.length === 0 ? (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Create at least one active {domainConfig.typeSingular.toLowerCase()} before adding a {domainConfig.recordSingular.toLowerCase()}.</div>
+            ) : null}
+
+            <section>
+              <div className="mb-4 flex items-start gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cyan-100 text-sm font-bold text-cyan-800">1</span>
+                <div><h4 className="font-semibold text-slate-950">What is this?</h4><p className="mt-1 text-sm text-slate-500">Choose a template and give the record a recognizable name.</p></div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className="mb-1.5 block text-sm font-medium text-slate-800">{domainConfig.typeSingular} <span className="text-rose-500">*</span></span>
+                  <select value={form.recordTypeId} onChange={(event) => { const type = recordTypes.find((item) => item._id === event.target.value); setForm((current) => ({ ...current, recordTypeId: event.target.value, status: type?.statuses[0]?.key ?? '', customFields: {} })) }} className={inputClass} required>
+                    <option value="">Select {domainConfig.typeSingular.toLowerCase()}</option>
+                    {recordTypes.filter((type) => type.isActive).map((type) => <option key={type._id} value={type._id}>{type.name}</option>)}
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm font-medium text-slate-800">Name <span className="text-rose-500">*</span></span>
+                  <input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} placeholder={`For example, Main ${domainConfig.recordSingular.toLowerCase()}`} className={inputClass} required />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm font-medium text-slate-800">{domainConfig.identifierLabel}</span>
+                  <input value={form.reference} onChange={(event) => setForm((current) => ({ ...current, reference: event.target.value }))} placeholder="Optional reference or ID" className={inputClass} />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-sm font-medium text-slate-800">Status <span className="text-rose-500">*</span></span>
+                  <select value={form.status} onChange={(event) => setForm((current) => ({ ...current, status: event.target.value }))} className={inputClass} required disabled={!selectedType}>
+                    <option value="">Select status</option>
+                    {(selectedType?.statuses ?? []).map((status) => <option key={status.key} value={status.key}>{status.label}</option>)}
+                  </select>
+                </label>
+              </div>
+            </section>
+
+            <section className="border-t border-slate-200 pt-6">
+              <div className="mb-4 flex items-start gap-3">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cyan-100 text-sm font-bold text-cyan-800">2</span>
+                <div><h4 className="font-semibold text-slate-950">Where is it?</h4><p className="mt-1 text-sm text-slate-500">These fields are optional and help people find the record later.</p></div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block"><span className="mb-1.5 block text-sm font-medium text-slate-800">{domainConfig.categorySingular}</span><select value={form.categoryId} onChange={(event) => setForm((current) => ({ ...current, categoryId: event.target.value }))} className={inputClass}><option value="">No {domainConfig.categorySingular.toLowerCase()}</option>{categories.map((category) => <option key={category._id} value={category._id}>{category.name}</option>)}</select></label>
+                <label className="block"><span className="mb-1.5 block text-sm font-medium text-slate-800">{domainConfig.groupSingular}</span><select value={form.groupId} onChange={(event) => setForm((current) => ({ ...current, groupId: event.target.value }))} className={inputClass}><option value="">No {domainConfig.groupSingular.toLowerCase()}</option>{groups.filter((group) => group.isActive).map((group) => <option key={group._id} value={group._id}>{group.name}</option>)}</select></label>
+                <label className="block"><span className="mb-1.5 block text-sm font-medium text-slate-800">Location</span><input value={form.location} onChange={(event) => setForm((current) => ({ ...current, location: event.target.value }))} placeholder="Office, site, or address" className={inputClass} /></label>
+                <label className="block"><span className="mb-1.5 block text-sm font-medium text-slate-800">{domainConfig.acquisitionDateLabel}</span><input type="date" value={form.acquiredAt} onChange={(event) => setForm((current) => ({ ...current, acquiredAt: event.target.value }))} className={inputClass} /></label>
+              </div>
+            </section>
+
+            {selectedType?.fields.length ? (
+              <section className="border-t border-slate-200 pt-6">
+                <div className="mb-4 flex items-start gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cyan-100 text-sm font-bold text-cyan-800">3</span>
+                  <div><h4 className="font-semibold text-slate-950">Additional information</h4><p className="mt-1 text-sm text-slate-500">Complete the extra fields defined for {selectedType.name}.</p></div>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">{selectedType.fields.map((field) => <Field key={field.key} definition={field} value={form.customFields[field.key]} onChange={(value) => setForm((current) => ({ ...current, customFields: { ...current.customFields, [field.key]: value } }))} />)}</div>
+              </section>
+            ) : null}
+
+            <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
+              {editingId ? <button type="button" onClick={reset} className={secondaryButtonClass}>Cancel</button> : null}
+              <button type="submit" disabled={submitting || recordTypes.length === 0} className={primaryButtonClass}>{submitting ? 'Saving…' : editingId ? `Save ${domainConfig.recordSingular.toLowerCase()}` : `Create ${domainConfig.recordSingular.toLowerCase()}`}</button>
+            </div>
+          </form>
+        ) : (
+          <div className="m-5 rounded-2xl border border-cyan-100 bg-cyan-50 p-4 text-sm text-cyan-900 sm:m-8">
+            <p className="font-semibold">You have read-only access to these records.</p>
+            <p className="mt-1">Use the filters below to find a record and open it for more details.</p>
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+        <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+          <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700">Workspace list</p><h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Browse {domainConfig.recordPlural.toLowerCase()}</h3></div>
+          <p className="text-sm text-slate-500">Showing {filtered.length} of {items.length}</p>
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <div className="grid gap-3 lg:grid-cols-[1.5fr_1fr_1fr_1fr_auto] lg:items-end">
+            <label className="block"><span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Search</span><input value={filters.search} onChange={(event) => setFilters((current) => ({ ...current, search: event.target.value }))} placeholder={`Search by name or ${domainConfig.identifierLabel.toLowerCase()}`} className={inputClass} /></label>
+            <label className="block"><span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Status</span><select value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))} className={inputClass}><option value="all">All statuses</option>{statusOptions.map((status) => <option key={status.key} value={status.key}>{status.label}</option>)}</select></label>
+            <label className="block"><span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">{domainConfig.typeSingular}</span><select value={filters.recordTypeId} onChange={(event) => setFilters((current) => ({ ...current, recordTypeId: event.target.value }))} className={inputClass}><option value="">All types</option>{recordTypes.map((type) => <option key={type._id} value={type._id}>{type.name}</option>)}</select></label>
+            <label className="block"><span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">{domainConfig.categorySingular}</span><select value={filters.categoryId} onChange={(event) => setFilters((current) => ({ ...current, categoryId: event.target.value }))} className={inputClass}><option value="">All categories</option>{categories.map((category) => <option key={category._id} value={category._id}>{category.name}</option>)}</select></label>
+            <button type="button" onClick={() => setFilters({ ...emptyRecordFilters })} className={secondaryButtonClass}>Clear filters</button>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-4 xl:grid-cols-2">
+          {filtered.length === 0 ? (
+            <div className="xl:col-span-2"><EmptyState title={items.length === 0 ? `No ${domainConfig.recordPlural.toLowerCase()} yet` : 'No matching records'} message={items.length === 0 ? `Create a ${domainConfig.recordSingular.toLowerCase()} above to start building your workspace.` : 'Try changing the search or clearing one of the filters.'} /></div>
+          ) : filtered.map((item) => {
+            const type = getRecordType(item)
+            const assignedPerson = getName(item.personId)
+            return (
+              <article key={item._id} className="rounded-2xl border border-slate-200 p-5 transition hover:border-cyan-200 hover:shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-wide text-cyan-700">{getName(item.recordTypeId)}</p><h4 className="mt-1 truncate text-lg font-semibold text-slate-950">{item.name}</h4><p className="mt-1 text-sm text-slate-500">{item.reference || 'No reference added'}</p></div>
+                  <span className="shrink-0 rounded-full bg-cyan-50 px-2.5 py-1 text-xs font-semibold text-cyan-700">{getStatusLabel(item)}</span>
+                </div>
+                <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+                  <div><dt className="text-xs uppercase tracking-wide text-slate-400">{domainConfig.categorySingular}</dt><dd className="mt-0.5 text-slate-700">{getName(item.categoryId)}</dd></div>
+                  <div><dt className="text-xs uppercase tracking-wide text-slate-400">{domainConfig.groupSingular}</dt><dd className="mt-0.5 text-slate-700">{getName(item.groupId)}</dd></div>
+                  <div><dt className="text-xs uppercase tracking-wide text-slate-400">Assigned to</dt><dd className="mt-0.5 text-slate-700">{assignedPerson === '—' ? 'No one' : assignedPerson}</dd></div>
+                  <div><dt className="text-xs uppercase tracking-wide text-slate-400">Location</dt><dd className="mt-0.5 text-slate-700">{item.location || '—'}</dd></div>
+                </dl>
+                <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+                  <button type="button" onClick={() => setSelected(item)} className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-700 hover:bg-cyan-100">View details</button>
+                  {canManage ? <button type="button" onClick={() => startEdit(item)} className={secondaryButtonClass}>Edit</button> : null}
+                  {canManage && type?.assignment?.enabled ? <button type="button" onClick={() => setAssigning({ record: item, mode: item.personId ? 'return' : 'assign' })} className={secondaryButtonClass}>{item.personId ? 'Return' : 'Assign'}</button> : null}
+                  {canManage ? <button type="button" onClick={() => void remove(item._id)} disabled={submitting} className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 hover:bg-rose-100 disabled:opacity-50">Delete</button> : null}
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      </section>
+
+      {selected ? <RecordDetails key={selected._id} record={selected} recordTypes={recordTypes} onClose={() => setSelected(null)} /> : null}
+      {assigning ? <AssignmentDialog record={assigning.record} people={people} mode={assigning.mode} submitting={submitting} onClose={() => setAssigning(null)} onSubmit={submitAssignment} /> : null}
+    </PageShell>
+  )
 }
