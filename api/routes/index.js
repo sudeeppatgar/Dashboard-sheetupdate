@@ -11,7 +11,6 @@ import auth from "./auth.routes.js";
 
 const router = Router();
 
-router.use("/employees", employees);
 router.use("/departments", departments);
 router.use("/categories", categories);
 router.use("/assets", assignments);
@@ -23,3 +22,4 @@ router.use("/make-models", makeModels);
 router.use("/auth", auth);
 
 export default router;
+
