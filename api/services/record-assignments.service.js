@@ -14,11 +14,6 @@ const loadRecordContext = async (recordId) => {
   return { record, recordType };
 };
 
-export const getAssignment = async (recordId) =>
-  RecordAssignment.findOne({ recordId, returnedAt: { $exists: false } })
-    .populate("personId")
-    .populate("assignedBy", "name email");
-
 export const getHistory = async (recordId) =>
   RecordAssignment.find({ recordId })
     .populate("personId")

@@ -3,7 +3,6 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import {
   createPerson as createPersonRecord,
   getPeople as getPersonRecords,
-  getPersonById,
   updatePerson as updatePersonRecord,
   togglePersonStatus as togglePersonRecordStatus,
   deletePerson as deletePersonRecord,
@@ -17,11 +16,6 @@ export const createPerson = asyncHandler(async (req, res) => {
 export const getPeople = asyncHandler(async (req, res) => {
   const people = await getPersonRecords(req.query);
   res.json(new ApiResponse(200, people, "People fetched"));
-});
-
-export const getPerson = asyncHandler(async (req, res) => {
-  const person = await getPersonById(req.params.id);
-  res.json(new ApiResponse(200, person, "Person fetched"));
 });
 
 export const updatePerson = asyncHandler(async (req, res) => {

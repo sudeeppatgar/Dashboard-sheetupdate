@@ -20,4 +20,15 @@ export const deleteRecord = async (id: string) => { await http.delete(`/records/
 export const getRecordHistory = async (id: string) => unwrap(await http.get<ApiEnvelope<RecordAssignmentHistory[]>>(`/records/${id}/history`))
 export const assignRecord = async (id: string, payload: Record<string, unknown>) => unwrap(await http.post<ApiEnvelope<unknown>>(`/records/${id}/assign`, payload))
 export const returnRecord = async (id: string, payload: Record<string, unknown>) => unwrap(await http.post<ApiEnvelope<unknown>>(`/records/${id}/return`, payload))
-export const exportRecordsCsvUrl = (filters?: Record<string, string>) => `${http.defaults.baseURL}/records/export.csv?${new URLSearchParams(filters || {}).toString()}`
+export const downloadRecordsCsv = async (filters?: Record<string, string>) => {
+  const response = await http.get<Blob>('/records/export.csv', {
+    params: filters,
+    responseType: 'blob',
+  })
+  const url = URL.createObjectURL(response.data)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'records.csv'
+  link.click()
+  URL.revokeObjectURL(url)
+}

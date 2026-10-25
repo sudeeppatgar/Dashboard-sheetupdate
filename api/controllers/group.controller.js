@@ -3,7 +3,6 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import {
   createGroup as createGroupRecord,
   getGroups as getGroupRecords,
-  getGroupById,
   updateGroup as updateGroupRecord,
   toggleGroupStatus as toggleGroupRecordStatus,
   deleteGroup as deleteGroupRecord,
@@ -17,11 +16,6 @@ export const createGroup = asyncHandler(async (req, res) => {
 export const getGroups = asyncHandler(async (req, res) => {
   const groups = await getGroupRecords(req.query);
   res.json(new ApiResponse(200, groups, "Groups fetched"));
-});
-
-export const getGroup = asyncHandler(async (req, res) => {
-  const group = await getGroupById(req.params.id);
-  res.json(new ApiResponse(200, group, "Group fetched"));
 });
 
 export const updateGroup = asyncHandler(async (req, res) => {

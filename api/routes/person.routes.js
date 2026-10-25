@@ -2,7 +2,6 @@ import { Router } from "express";
 import {
   createPerson,
   getPeople,
-  getPerson,
   updatePerson,
   togglePersonStatus,
   deletePerson,
@@ -19,7 +18,6 @@ const router = Router();
 
 router.use(protect);
 router.get("/", getPeople);
-router.get("/:id", validateParams(personIdValidator), getPerson);
 router.post("/", restrictTo("admin"), validateBody(createPersonValidator), createPerson);
 router.put("/:id", restrictTo("admin"), validateParams(personIdValidator), validateBody(updatePersonValidator), updatePerson);
 router.patch("/:id/status", restrictTo("admin"), validateParams(personIdValidator), togglePersonStatus);

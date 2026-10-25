@@ -170,7 +170,6 @@ POST /api/auth/login
 
 ```http
 GET    /api/categories
-GET    /api/categories/:id
 POST   /api/categories
 PUT    /api/categories/:id
 DELETE /api/categories/:id
@@ -180,12 +179,10 @@ DELETE /api/categories/:id
 
 ```http
 GET    /api/records
-GET    /api/records/:id
 POST   /api/records                      admin only
 PUT    /api/records/:id                  admin only
 DELETE /api/records/:id                  admin only, guarded
 GET    /api/records/export.csv
-GET    /api/records/:id/assignment
 GET    /api/records/:id/history
 POST   /api/records/:id/assign            admin only
 POST   /api/records/:id/return            admin only
@@ -224,11 +221,6 @@ POST   /api/people                       admin only
 PUT    /api/people/:id                   admin only
 PATCH  /api/people/:id/status            admin only
 DELETE /api/people/:id                   admin only, guarded
-
-GET    /api/records/:id/assignment
-GET    /api/records/:id/history
-POST   /api/records/:id/assign            admin only
-POST   /api/records/:id/return            admin only
 
 GET    /api/dashboard/summary
 ```

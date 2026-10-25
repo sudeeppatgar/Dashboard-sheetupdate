@@ -3,7 +3,6 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import {
   createRecordType as createRecordTypeRecord,
   getRecordTypes as getRecordTypeRecords,
-  getRecordTypeById,
   updateRecordType as updateRecordTypeRecord,
   toggleRecordTypeStatus as toggleRecordTypeRecordStatus,
   deleteRecordType as deleteRecordTypeRecord,
@@ -17,11 +16,6 @@ export const createRecordType = asyncHandler(async (req, res) => {
 export const getRecordTypes = asyncHandler(async (req, res) => {
   const recordTypes = await getRecordTypeRecords(req.query);
   res.json(new ApiResponse(200, recordTypes, "Record types fetched"));
-});
-
-export const getRecordType = asyncHandler(async (req, res) => {
-  const recordType = await getRecordTypeById(req.params.id);
-  res.json(new ApiResponse(200, recordType, "Record type fetched"));
 });
 
 export const updateRecordType = asyncHandler(async (req, res) => {

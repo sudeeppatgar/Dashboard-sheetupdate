@@ -2,7 +2,6 @@ import { Router } from "express";
 import {
   createCategory,
   getCategories,
-  getCategory,
   updateCategory,
   deleteCategory,
 } from "../controllers/category.controller.js";
@@ -20,7 +19,6 @@ router.use(protect);
 
 router.post("/", restrictTo("admin"), validateBody(createCategoryValidator), createCategory);
 router.get("/", getCategories);
-router.get("/:id", validateParams(categoryIdValidator), getCategory);
 router.put("/:id", restrictTo("admin"), validateParams(categoryIdValidator), validateBody(updateCategoryValidator), updateCategory);
 router.delete("/:id", restrictTo("admin"), validateParams(categoryIdValidator), deleteCategory);
 

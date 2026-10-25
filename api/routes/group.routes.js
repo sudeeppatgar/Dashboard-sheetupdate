@@ -2,7 +2,6 @@ import { Router } from "express";
 import {
   createGroup,
   getGroups,
-  getGroup,
   updateGroup,
   toggleGroupStatus,
   deleteGroup,
@@ -19,7 +18,6 @@ const router = Router();
 
 router.use(protect);
 router.get("/", getGroups);
-router.get("/:id", validateParams(groupIdValidator), getGroup);
 router.post("/", restrictTo("admin"), validateBody(createGroupValidator), createGroup);
 router.put("/:id", restrictTo("admin"), validateParams(groupIdValidator), validateBody(updateGroupValidator), updateGroup);
 router.patch("/:id/status", restrictTo("admin"), validateParams(groupIdValidator), toggleGroupStatus);

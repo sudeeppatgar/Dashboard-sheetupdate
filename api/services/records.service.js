@@ -181,12 +181,6 @@ export const getRecords = async (query = {}) => {
   };
 };
 
-export const getRecordById = async (id) => {
-  const record = await populateRecord(Record.findById(id));
-  if (!record) throw new ApiError(404, "Record not found");
-  return record;
-};
-
 export const updateRecord = async (id, data) => {
   const current = await Record.findById(id);
   if (!current) throw new ApiError(404, "Record not found");

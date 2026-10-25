@@ -40,7 +40,6 @@ api/models/
   group.model.js
   person.model.js
   record-assignment.model.js
-  audit-log.model.js
 
 api/routes/          HTTP route definitions and middleware composition
 api/controllers/     request extraction and response formatting
@@ -176,7 +175,6 @@ POST /api/auth/login
 
 ```http
 GET    /api/categories
-GET    /api/categories/:id
 POST   /api/categories              admin only
 PUT    /api/categories/:id          admin only
 DELETE /api/categories/:id          admin only, guarded
@@ -186,7 +184,6 @@ DELETE /api/categories/:id          admin only, guarded
 
 ```http
 GET    /api/record-types
-GET    /api/record-types/:id
 POST   /api/record-types              admin only
 PUT    /api/record-types/:id          admin only
 PATCH  /api/record-types/:id/status   admin only
@@ -197,7 +194,6 @@ DELETE /api/record-types/:id           admin only, guarded
 
 ```http
 GET    /api/records
-GET    /api/records/:id
 POST   /api/records                   admin only
 PUT    /api/records/:id               admin only
 DELETE /api/records/:id               admin only, guarded
@@ -221,14 +217,12 @@ limit
 
 ```http
 GET    /api/groups
-GET    /api/groups/:id
 POST   /api/groups                   admin only
 PUT    /api/groups/:id               admin only
 PATCH  /api/groups/:id/status        admin only
 DELETE /api/groups/:id               admin only, guarded
 
 GET    /api/people
-GET    /api/people/:id
 POST   /api/people                   admin only
 PUT    /api/people/:id               admin only
 PATCH  /api/people/:id/status        admin only
@@ -240,7 +234,6 @@ DELETE /api/people/:id               admin only, guarded
 Assignment routes work only for record types where `assignment.enabled` is true.
 
 ```http
-GET  /api/records/:id/assignment
 GET  /api/records/:id/history
 POST /api/records/:id/assign          admin only
 POST /api/records/:id/return          admin only

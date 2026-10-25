@@ -3,13 +3,11 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import {
   createRecord as createRecordEntry,
   getRecords as getRecordEntries,
-  getRecordById,
   updateRecord as updateRecordEntry,
   deleteRecord as deleteRecordEntry,
   exportRecordsCsv,
 } from "../services/records.service.js";
 import {
-  getAssignment,
   getHistory,
   assignRecord,
   returnRecord,
@@ -23,11 +21,6 @@ export const createRecord = asyncHandler(async (req, res) => {
 export const getRecords = asyncHandler(async (req, res) => {
   const records = await getRecordEntries(req.query);
   res.json(new ApiResponse(200, records, "Records fetched"));
-});
-
-export const getRecord = asyncHandler(async (req, res) => {
-  const record = await getRecordById(req.params.id);
-  res.json(new ApiResponse(200, record, "Record fetched"));
 });
 
 export const updateRecord = asyncHandler(async (req, res) => {
@@ -45,11 +38,6 @@ export const exportRecords = asyncHandler(async (req, res) => {
   res.setHeader("Content-Type", "text/csv");
   res.setHeader("Content-Disposition", 'attachment; filename="records.csv"');
   res.send(csv);
-});
-
-export const getRecordAssignment = asyncHandler(async (req, res) => {
-  const assignment = await getAssignment(req.params.id);
-  res.json(new ApiResponse(200, assignment, "Assignment fetched"));
 });
 
 export const getRecordHistory = asyncHandler(async (req, res) => {
