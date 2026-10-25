@@ -1,4 +1,4 @@
-import type { Group } from '../groups/types'
+import type { Group } from '../../groups/types'
 
 export type Person = {
   _id: string

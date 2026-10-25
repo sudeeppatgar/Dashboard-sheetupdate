@@ -1,7 +1,7 @@
-import type { Category } from '../catalog/types'
-import type { Group } from '../groups/types'
-import type { Person } from '../people/types'
-import type { RecordType } from '../record-types/types'
+import type { Category } from '../../catalog/types'
+import type { Group } from '../../groups/types'
+import type { Person } from '../../people/types'
+import type { RecordType } from '../../record-types/types'
 
 export type WorkspaceRecord = {
   _id: string
