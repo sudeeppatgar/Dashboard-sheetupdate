@@ -19,9 +19,11 @@ type PersonForm = {
   title: string
   phone: string
   location: string
+  loginEnabled: boolean
+  password: string
 }
 
-const createEmptyForm = (): PersonForm => ({ name: '', reference: '', email: '', groupId: '', title: '', phone: '', location: '' })
+const createEmptyForm = (): PersonForm => ({ name: '', reference: '', email: '', groupId: '', title: '', phone: '', location: '', loginEnabled: false, password: '' })
 const inputClass = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100'
 
 const getGroupName = (groupId: Person['groupId'], groups: Group[]) => {
@@ -75,6 +77,8 @@ export default function PeoplePage() {
         title: form.title.trim() || undefined,
         phone: form.phone.trim() || undefined,
         location: form.location.trim() || undefined,
+        loginEnabled: form.loginEnabled,
+        password: form.password.trim() || undefined,
       }
       if (editingId) await updatePerson(editingId, payload)
       else await createPerson(payload)
@@ -98,6 +102,8 @@ export default function PeoplePage() {
       title: item.title ?? '',
       phone: item.phone ?? '',
       location: item.location ?? '',
+      loginEnabled: Boolean(item.loginEnabled),
+      password: '',
     })
     window.requestAnimationFrame(() => document.getElementById('person-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
   }
@@ -141,8 +147,9 @@ export default function PeoplePage() {
                 <input value={form.reference} onChange={(event) => setForm((current) => ({ ...current, reference: event.target.value }))} placeholder="Employee ID or reference" className={inputClass} />
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-sm font-medium text-slate-800">Email</span>
-                <input type="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} placeholder="alex@example.com" className={inputClass} />
+                <span className="mb-1.5 block text-sm font-medium text-slate-800">Email {form.loginEnabled ? <span className="text-rose-500">*</span> : null}</span>
+                <input type="email" value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} placeholder="alex@example.com" className={inputClass} required={form.loginEnabled} />
+                <span className="mt-1.5 block text-xs text-slate-500">Required if this person needs to log in.</span>
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-sm font-medium text-slate-800">Group</span>
@@ -165,6 +172,23 @@ export default function PeoplePage() {
                 <input value={form.location} onChange={(event) => setForm((current) => ({ ...current, location: event.target.value }))} placeholder="New York office" className={inputClass} />
               </label>
             </div>
+
+            <section className="rounded-2xl border border-cyan-100 bg-cyan-50 p-4">
+              <label className="flex items-start gap-3">
+                <input type="checkbox" checked={form.loginEnabled} onChange={(event) => setForm((current) => ({ ...current, loginEnabled: event.target.checked }))} className="mt-0.5 h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500" />
+                <span>
+                  <span className="block text-sm font-semibold text-cyan-950">Allow this person to log in</span>
+                  <span className="mt-1 block text-xs leading-5 text-cyan-800">Create an employee login account using their email and password. They will have standard user access, not admin access.</span>
+                </span>
+              </label>
+              {form.loginEnabled ? (
+                <label className="mt-4 block border-t border-cyan-200 pt-4">
+                  <span className="mb-1.5 block text-sm font-medium text-cyan-950">{editingId ? 'New password' : 'Temporary password'} <span className="text-rose-500">*</span></span>
+                  <input type="password" value={form.password} onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))} placeholder={editingId ? 'Leave blank to keep the current password' : 'At least 8 characters'} minLength={editingId ? undefined : 8} required={!editingId} className={inputClass} />
+                  <span className="mt-1.5 block text-xs text-cyan-800">{editingId ? 'Leave this blank if the employee should keep their current password.' : 'Share this temporary password securely with the employee.'}</span>
+                </label>
+              ) : null}
+            </section>
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               {editingId ? <Button type="button" onClick={reset}>Cancel</Button> : null}
               <Button type="submit" variant="primary" disabled={submitting}>{submitting ? 'Saving…' : editingId ? `Save ${domainConfig.personSingular.toLowerCase()}` : `Add ${domainConfig.personSingular.toLowerCase()}`}</Button>
@@ -201,7 +225,10 @@ export default function PeoplePage() {
                       <h4 className="font-semibold text-slate-950">{item.name}</h4>
                       <p className="mt-1 text-sm text-slate-500">{item.title || 'No job title added'}</p>
                     </div>
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${item.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>{item.isActive ? 'Active' : 'Inactive'}</span>
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${item.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>{item.isActive ? 'Active' : 'Inactive'}</span>
+                      {item.loginEnabled ? <span className="rounded-full bg-cyan-100 px-2.5 py-1 text-xs font-semibold text-cyan-700">Login enabled</span> : null}
+                    </div>
                   </div>
                 </div>
               </div>

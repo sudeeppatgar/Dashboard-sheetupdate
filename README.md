@@ -9,6 +9,7 @@ The application gives administrators a single workspace to manage records and th
 - JWT-based login with active-user and password-change checks.
 - Admin and read-only user roles.
 - CRUD management for records, categories, record types, groups, and people.
+- Admins can optionally create a standard employee login while adding a person by enabling login access and setting a temporary password.
 - Configurable record types, lifecycle statuses, and custom fields.
 - Generic records, groups, people, and assignment history APIs.
 - Search by record name or reference.
@@ -165,6 +166,8 @@ Authorization: Bearer <jwt>
 ```http
 POST /api/auth/login
 ```
+
+When `loginEnabled` is `true` on `POST /api/people`, the API creates a standard `user` login using the person's email and password. The password is hashed in the `User` model and is never stored on or returned with the `Person` record. On an update, leave the password blank to keep the existing password.
 
 ### Categories
 

@@ -11,6 +11,10 @@ export const login = async (email, password) => {
     throw new ApiError(401, "Invalid credentials");
   }
 
+  if (user.isActive === false) {
+    throw new ApiError(403, "Your account is inactive. Contact an administrator");
+  }
+
   const isMatch = await comparePassword(password, user.password);
 
   if (!isMatch) {

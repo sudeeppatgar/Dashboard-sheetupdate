@@ -1,4 +1,4 @@
-import { isMongoId, isNonEmptyString, trimValue } from "../utils/validators.js";
+import { isEmail, isMongoId, isNonEmptyString, trimValue } from "../utils/validators.js";
 
 const idValidator = (label) => ({
   id: {
@@ -53,10 +53,26 @@ export const createPersonValidator = {
     type: "string",
     minLength: 2,
     transform: trimValue,
-    validate: (value) => (isNonEmptyString(value) ? true : "name is required"),
+      validate: (value) => (isNonEmptyString(value) ? true : "name is required"),
   },
+  email: {
+    required: false,
+    type: "string",
+    transform: (value) => trimValue(value).toLowerCase(),
+    validate: (value) => (isEmail(value) ? true : "email must be valid"),
+  },
+  loginEnabled: { required: false, type: "boolean" },
+  password: { required: false, type: "string", minLength: 8 },
 };
 
 export const updatePersonValidator = {
   name: { required: false, type: "string", minLength: 2, transform: trimValue },
+  email: {
+    required: false,
+    type: "string",
+    transform: (value) => trimValue(value).toLowerCase(),
+    validate: (value) => (isEmail(value) ? true : "email must be valid"),
+  },
+  loginEnabled: { required: false, type: "boolean" },
+  password: { required: false, type: "string", minLength: 8 },
 };
