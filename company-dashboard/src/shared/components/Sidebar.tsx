@@ -21,7 +21,7 @@ type SidebarProps = {
 }
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
-  const { user } = useApp()
+  const { user, signOut } = useApp()
   const navItems = user?.role === 'admin' ? adminNavItems : userNavItems
 
   return (
@@ -64,6 +64,25 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           </NavLink>
         ))}
         </nav>
+
+        <div className="mt-5 border-t border-slate-100 pt-4">
+          {isOpen ? (
+            <div className="mb-3 rounded-2xl bg-slate-50 px-3 py-3">
+              <p className="truncate text-sm font-semibold text-slate-900">{user?.name}</p>
+              <p className="truncate text-xs text-slate-500">{user?.email}</p>
+            </div>
+          ) : null}
+          <button
+            type="button"
+            onClick={signOut}
+            title={isOpen ? undefined : 'Log out'}
+            aria-label="Log out"
+            className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-sm text-slate-700 transition hover:bg-rose-50 hover:text-rose-700 ${isOpen ? 'justify-start' : 'justify-center'}`}
+          >
+            <span aria-hidden="true" className="flex h-6 w-6 shrink-0 items-center justify-center text-base">↪</span>
+            {isOpen ? <span>Log out</span> : null}
+          </button>
+        </div>
       </aside>
     </>
   )
