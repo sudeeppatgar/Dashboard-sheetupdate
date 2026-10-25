@@ -12,13 +12,7 @@ export type MakeModel = {
   createdAt?: string
 }
 
-export type Processor = {
-  _id: string
-  name: string
-  createdAt?: string
-}
-
-export type CatalogItem = Category | MakeModel | Processor
+export type CatalogItem = Category | MakeModel
 
 export type NameForm = {
   name: string

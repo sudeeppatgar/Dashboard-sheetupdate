@@ -3,6 +3,7 @@ import FieldError from '../../../shared/components/FieldError'
 import { assetStatusOptions } from '../constants'
 import { validateAssetForm } from '../utils/validation'
 import type { AssetFormValue, AssetOption, AssetStatus } from '../types'
+import { domainConfig } from '../../../shared/config/domain'
 
 type AssetFormProps = {
   form: AssetFormValue
@@ -46,7 +47,7 @@ function AssetForm({
       <div className="grid gap-4 md:grid-cols-2">
         <label className="block">
           <span className="mb-2 block text-sm font-medium text-slate-700">
-            Asset name <span className="text-rose-600">*</span>
+             {domainConfig.recordSingular} name <span className="text-rose-600">*</span>
           </span>
           <input
             value={form.fullName}
@@ -59,7 +60,7 @@ function AssetForm({
             className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400 ${
               errors.fullName ? 'border-rose-300' : 'border-slate-200'
             }`}
-            placeholder="Employee laptop"
+             placeholder={`Enter a ${domainConfig.recordSingular.toLowerCase()} name`}
             required
             aria-required="true"
             aria-invalid={Boolean(errors.fullName)}
@@ -69,7 +70,7 @@ function AssetForm({
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-slate-700">Serial number</span>
+           <span className="mb-2 block text-sm font-medium text-slate-700">{domainConfig.identifierLabel}</span>
           <input
             value={form.serialNumber}
             onChange={(event) =>
@@ -79,7 +80,7 @@ function AssetForm({
               }))
             }
             className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
-            placeholder="SN-1024"
+             placeholder="Optional reference"
           />
         </label>
 
@@ -105,7 +106,7 @@ function AssetForm({
 
         <label className="block">
           <span className="mb-2 block text-sm font-medium text-slate-700">
-            Category <span className="text-rose-600">*</span>
+             {domainConfig.categorySingular} <span className="text-rose-600">*</span>
           </span>
           <select
             value={form.categoryId}
@@ -123,7 +124,7 @@ function AssetForm({
             aria-invalid={Boolean(errors.categoryId)}
             aria-describedby={errors.categoryId ? 'asset-category-error' : undefined}
           >
-            <option value="">Select category</option>
+             <option value="">Select {domainConfig.categorySingular.toLowerCase()}</option>
             {categoryOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -135,7 +136,7 @@ function AssetForm({
 
         <label className="block">
           <span className="mb-2 block text-sm font-medium text-slate-700">
-            Make model <span className="font-normal text-slate-400">(optional)</span>
+             {domainConfig.modelSingular} <span className="font-normal text-slate-400">(optional)</span>
           </span>
           <select
             value={form.makeModelId}
@@ -147,7 +148,7 @@ function AssetForm({
             }
             className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
           >
-            <option value="">Select make model</option>
+             <option value="">Select {domainConfig.modelSingular.toLowerCase()}</option>
             {makeModelOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -158,7 +159,7 @@ function AssetForm({
 
         <label className="block md:col-span-2">
           <span className="mb-2 block text-sm font-medium text-slate-700">
-            Purchase / transaction date <span className="font-normal text-slate-400">(optional)</span>
+             {domainConfig.acquisitionDateLabel} <span className="font-normal text-slate-400">(optional)</span>
           </span>
           <input
             type="date"
@@ -176,7 +177,7 @@ function AssetForm({
             aria-describedby={errors.transactionDate ? 'asset-transaction-date-error' : undefined}
           />
           <p className="mt-1.5 text-xs text-slate-500">
-            Add the date the asset was purchased or recorded.
+             Add the date this {domainConfig.recordSingular.toLowerCase()} was acquired or recorded.
           </p>
           <FieldError
             id="asset-transaction-date-error"
@@ -196,11 +197,11 @@ function AssetForm({
           </select>
         </label>
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-slate-700">Warranty start</span>
+          <span className="mb-2 block text-sm font-medium text-slate-700">Coverage start</span>
           <input type="date" value={form.warrantyStartDate} onChange={(e) => setForm((c) => ({ ...c, warrantyStartDate: e.target.value }))} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm" />
         </label>
         <label className="block">
-          <span className="mb-2 block text-sm font-medium text-slate-700">Warranty end</span>
+          <span className="mb-2 block text-sm font-medium text-slate-700">Coverage end</span>
           <input type="date" value={form.warrantyEndDate} onChange={(e) => setForm((c) => ({ ...c, warrantyEndDate: e.target.value }))} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm" />
         </label>
 
@@ -211,7 +212,11 @@ function AssetForm({
           disabled={submitting}
           className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {submitting ? 'Saving asset...' : editingId ? 'Update asset' : 'Add asset'}
+           {submitting
+             ? `Saving ${domainConfig.recordSingular.toLowerCase()}...`
+             : editingId
+               ? `Update ${domainConfig.recordSingular.toLowerCase()}`
+               : `Add ${domainConfig.recordSingular.toLowerCase()}`}
         </button>
 
         <button

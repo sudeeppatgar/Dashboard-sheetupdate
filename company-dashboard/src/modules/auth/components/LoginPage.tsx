@@ -4,10 +4,11 @@ import { useApp } from '../../../shared/context/useApp'
 import Notice from '../../../shared/components/Notice'
 import type { LoginFormValue } from '../types'
 import { getErrorMessage } from '../../../shared/utils/getErrorMessage'
+import { domainConfig } from '../../../shared/config/domain'
 
 const initialForm: LoginFormValue = {
-  email: 'admin@company.com',
-  password: 'admin123',
+  email: '',
+  password: '',
 }
 
 const highlights = [
@@ -48,15 +49,15 @@ function LoginPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.22),transparent_40%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.2),transparent_35%)]" />
           <div className="relative space-y-6">
             <div className="inline-flex rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.24em] text-cyan-200">
-              Company Dashboard
+               {domainConfig.appName}
             </div>
             <div className="space-y-4">
-              <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-                Manage company assets from a clean table-first workspace.
+               <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+                 {domainConfig.appTagline}
               </h1>
               <p className="max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
                 Log in with the token-backed API, keep the session in localStorage,
-                and manage categories, make models, and assets in one place.
+                and manage your records, categories, variants, groups, and people in one place.
               </p>
             </div>
 
@@ -75,7 +76,7 @@ function LoginPage() {
           <div className="mb-6 space-y-2">
             <h2 className="text-2xl font-semibold tracking-tight">Sign in</h2>
             <p className="text-sm text-slate-500">
-              Use the seeded admin account or your own backend user.
+              Use your account to access the workspace.
             </p>
           </div>
 
@@ -89,7 +90,7 @@ function LoginPage() {
                 onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
                 type="email"
                 className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-cyan-400 focus:bg-white"
-                placeholder="admin@company.com"
+                 placeholder="you@example.com"
               />
             </label>
 
@@ -100,7 +101,7 @@ function LoginPage() {
                 onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
                 type="password"
                 className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-cyan-400 focus:bg-white"
-                placeholder="admin123"
+                 placeholder="Enter your password"
               />
             </label>
 

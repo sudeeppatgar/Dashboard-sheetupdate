@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react'
 import { assetStatusOptions, emptyAssetFilters } from '../constants'
 import type { AssetFilters as AssetFiltersValue, AssetOption, AssetStatus } from '../types'
+import { domainConfig } from '../../../shared/config/domain'
 
 type AssetFiltersProps = {
   filters: AssetFiltersValue
@@ -29,12 +30,12 @@ function AssetFilters({
     <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
         <label className="block flex-1">
-          <span className="mb-2 block text-sm font-medium text-slate-700">Search assets</span>
+           <span className="mb-2 block text-sm font-medium text-slate-700">Search {domainConfig.recordPlural.toLowerCase()}</span>
           <input
             value={filters.search}
             onChange={(event) => setFilters((current) => ({ ...current, search: event.target.value }))}
             className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
-            placeholder="Search by asset name or serial number"
+             placeholder={`Search by ${domainConfig.recordSingular.toLowerCase()} name or ${domainConfig.identifierLabel.toLowerCase()}`}
           />
         </label>
 
@@ -60,7 +61,7 @@ function AssetFilters({
         </label>
 
         <label className="block lg:w-44">
-          <span className="mb-2 block text-sm font-medium text-slate-700">Category</span>
+           <span className="mb-2 block text-sm font-medium text-slate-700">{domainConfig.categorySingular}</span>
           <select
             value={filters.categoryId}
             onChange={(event) =>
@@ -68,7 +69,7 @@ function AssetFilters({
             }
             className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
           >
-            <option value="">All categories</option>
+             <option value="">All {domainConfig.categoryPlural.toLowerCase()}</option>
             {categoryOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -89,13 +90,13 @@ function AssetFilters({
 
       <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-slate-500">
-          Showing {filteredCount} of {totalCount} assets
+           Showing {filteredCount} of {totalCount} {domainConfig.recordPlural.toLowerCase()}
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <label className="block sm:w-44">
-            <span className="sr-only">Make model</span>
-            <select
-              aria-label="Filter by make model"
+             <span className="sr-only">{domainConfig.modelSingular}</span>
+             <select
+               aria-label={`Filter by ${domainConfig.modelSingular.toLowerCase()}`}
               value={filters.makeModelId}
               onChange={(event) =>
                 setFilters((current) => ({
@@ -105,7 +106,7 @@ function AssetFilters({
               }
               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
             >
-              <option value="">All make models</option>
+               <option value="">All {domainConfig.modelPlural.toLowerCase()}</option>
               {makeModelOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}

@@ -4,14 +4,15 @@ import PageShell from '../../../shared/components/PageShell'
 import {
   createEmployee,
   deleteEmployee,
-  getDepartments,
   getEmployees,
   toggleEmployeeStatus,
   updateEmployee,
 } from '../api'
+import { getDepartments } from '../../departments/api'
 import EmptyState from '../../../shared/components/EmptyState'
 import type { Employee } from '../types'
 import type { Department } from '../../departments/types'
+import { domainConfig } from '../../../shared/config/domain'
 
 type EmployeeForm = {
   employeeNumber: string
@@ -20,6 +21,7 @@ type EmployeeForm = {
   departmentId: string
   jobTitle: string
   isActive: boolean
+  password?: string
 }
 
 export function EmployeesPage() {
@@ -83,7 +85,7 @@ export function EmployeesPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Delete this employee?')) return
+    if (!window.confirm(`Delete this ${domainConfig.personSingular.toLowerCase()}?`)) return
     setSubmitting(true)
     try {
       await deleteEmployee(id)
@@ -98,18 +100,18 @@ export function EmployeesPage() {
       <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight">Employees</h2>
-            <p className="mt-1 text-sm text-slate-500">Manage company employees.</p>
+            <h2 className="text-xl font-semibold tracking-tight">{domainConfig.personPlural}</h2>
+            <p className="mt-1 text-sm text-slate-500">Manage the people connected to your workspace.</p>
           </div>
         </div>
 
         {canManage ? (
           <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <input
+                <input
                 value={form.employeeNumber}
                 onChange={(e) => setForm({ ...form, employeeNumber: e.target.value })}
-                placeholder="Number"
+                 placeholder={`${domainConfig.personSingular} reference`}
                 className="flex-1 min-w-[200px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
               />
               <input
@@ -125,8 +127,8 @@ export function EmployeesPage() {
                 className="flex-1 min-w-[200px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
               />
               <input
-                value={(form as any).password || ''}
-                onChange={(e) => setForm({ ...form, password: e.target.value } as any)}
+                 value={form.password ?? ''}
+                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 placeholder="Password"
                 type="password"
                 className="flex-1 min-w-[200px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
@@ -136,7 +138,7 @@ export function EmployeesPage() {
                 onChange={(e) => setForm({ ...form, departmentId: e.target.value })}
                 className="flex-1 min-w-[200px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
               >
-                <option value="">Select department</option>
+                  <option value="">Select {domainConfig.groupSingular.toLowerCase()}</option>
                 {departments.map((d) => (
                   <option key={d._id} value={d._id}>
                     {d.name}
@@ -160,7 +162,7 @@ export function EmployeesPage() {
                 <button
                   onClick={() => {
                     setEditingId(null)
-                    setForm({ employeeNumber: '', name: '', email: '', departmentId: '', jobTitle: '', isActive: true } as any)
+                     setForm({ employeeNumber: '', name: '', email: '', departmentId: '', jobTitle: '', isActive: true })
                   }}
                   className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
                 >
@@ -171,7 +173,7 @@ export function EmployeesPage() {
           </div>
         ) : (
           <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            You have read-only access to employees.
+            You have read-only access to {domainConfig.personPlural.toLowerCase()}.
           </div>
         )}
 
@@ -179,10 +181,10 @@ export function EmployeesPage() {
           <table className="min-w-[920px] w-full border-collapse text-left text-sm">
             <thead className="bg-slate-100 text-slate-600">
               <tr>
-                <th className="px-4 py-3 font-medium">Number</th>
+                <th className="px-4 py-3 font-medium">Reference</th>
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Email</th>
-                <th className="px-4 py-3 font-medium">Department</th>
+                <th className="px-4 py-3 font-medium">{domainConfig.groupSingular}</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 {canManage ? <th className="px-4 py-3 font-medium">Actions</th> : null}
               </tr>
@@ -192,8 +194,12 @@ export function EmployeesPage() {
                 <tr>
                   <td className="px-4 py-8 text-center text-slate-500" colSpan={canManage ? 6 : 5}>
                     <EmptyState
-                      title="No employees yet"
-                      message={canManage ? 'Add an employee to get started.' : 'No employees available.'}
+                       title={`No ${domainConfig.personPlural.toLowerCase()} yet`}
+                       message={
+                         canManage
+                           ? `Add a ${domainConfig.personSingular.toLowerCase()} to get started.`
+                           : `No ${domainConfig.personPlural.toLowerCase()} available.`
+                       }
                     />
                   </td>
                 </tr>

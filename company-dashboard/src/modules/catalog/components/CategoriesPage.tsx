@@ -8,6 +8,7 @@ import { createCategory, deleteCategory, getCategories, updateCategory } from '.
 import { emptyNameForm } from '../constants'
 import type { CatalogItem } from '../types'
 import type { Category } from '../types'
+import { domainConfig } from '../../../shared/config/domain'
 
 function CategoriesPage() {
   const { canManage, setNotice } = useApp()
@@ -33,11 +34,11 @@ function CategoriesPage() {
         await resource.create(name)
       }
       setForm(emptyNameForm)
-      setNotice({ type: 'success', message: 'Category saved.' })
+       setNotice({ type: 'success', message: `${domainConfig.categorySingular} saved.` })
     } catch (error) {
       setNotice({
         type: 'error',
-        message: getErrorMessage(error, 'Failed to save category.'),
+         message: getErrorMessage(error, `Failed to save ${domainConfig.categorySingular.toLowerCase()}.`),
       })
     }
   }
@@ -47,11 +48,11 @@ function CategoriesPage() {
 
     try {
       await resource.remove(id)
-      setNotice({ type: 'success', message: 'Category deleted.' })
+       setNotice({ type: 'success', message: `${domainConfig.categorySingular} deleted.` })
     } catch (error) {
       setNotice({
         type: 'error',
-        message: getErrorMessage(error, 'Delete failed.'),
+         message: getErrorMessage(error, `Failed to delete ${domainConfig.categorySingular.toLowerCase()}.`),
       })
     }
   }
@@ -69,8 +70,8 @@ function CategoriesPage() {
   return (
     <PageShell>
       <NameResourceSection
-        title="Categories"
-        description="Category rows are shared across assets."
+           title={domainConfig.categoryPlural}
+           description={`${domainConfig.categoryPlural} are shared across ${domainConfig.recordPlural.toLowerCase()}.`}
         items={resource.items}
         form={form}
         setForm={setForm}

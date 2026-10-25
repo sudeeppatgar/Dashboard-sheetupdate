@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Asset } from '../types'
 import type { Employee } from '../../employees/types'
+import { domainConfig } from '../../../shared/config/domain'
 
 type AssignmentDialogProps = {
   asset: Asset
@@ -64,7 +65,9 @@ function AssignmentDialog({ asset, mode, employees, submitting, onClose, onSubmi
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700">
-              {mode === 'assign' ? 'Assign asset' : 'Return asset'}
+               {mode === 'assign'
+                 ? `Assign ${domainConfig.recordSingular.toLowerCase()}`
+                 : `Return ${domainConfig.recordSingular.toLowerCase()}`}
             </p>
             <h2 className="mt-1 text-2xl font-semibold tracking-tight">{asset.fullName}</h2>
           </div>
@@ -81,14 +84,14 @@ function AssignmentDialog({ asset, mode, employees, submitting, onClose, onSubmi
           {mode === 'assign' ? (
             <>
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-slate-700">Employee</span>
+                 <span className="mb-2 block text-sm font-medium text-slate-700">{domainConfig.personSingular}</span>
                 <select
                   value={employeeId}
                   onChange={(event) => setEmployeeId(event.target.value)}
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
                   required
                 >
-                  <option value="">Select employee</option>
+                   <option value="">Select {domainConfig.personSingular.toLowerCase()}</option>
                   {employees.map((employee) => (
                     <option key={employee._id} value={employee._id}>
                       {employee.name} ({employee.employeeNumber})
@@ -169,7 +172,11 @@ function AssignmentDialog({ asset, mode, employees, submitting, onClose, onSubmi
               disabled={submitting}
               className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {submitting ? 'Saving...' : mode === 'assign' ? 'Assign' : 'Return'}
+              {submitting
+                ? 'Saving...'
+                : mode === 'assign'
+                  ? `Assign ${domainConfig.recordSingular.toLowerCase()}`
+                  : `Return ${domainConfig.recordSingular.toLowerCase()}`}
             </button>
           </div>
         </form>

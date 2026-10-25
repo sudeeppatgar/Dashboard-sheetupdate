@@ -8,6 +8,7 @@ import { createMakeModel, deleteMakeModel, getMakeModels, updateMakeModel } from
 import { emptyNameForm } from '../constants'
 import type { CatalogItem } from '../types'
 import type { MakeModel } from '../types'
+import { domainConfig } from '../../../shared/config/domain'
 
 function MakeModelsPage() {
   const { canManage, setNotice } = useApp()
@@ -33,11 +34,11 @@ function MakeModelsPage() {
         await resource.create(name)
       }
       setForm(emptyNameForm)
-      setNotice({ type: 'success', message: 'Make model saved.' })
+       setNotice({ type: 'success', message: `${domainConfig.modelSingular} saved.` })
     } catch (error) {
       setNotice({
         type: 'error',
-        message: getErrorMessage(error, 'Failed to save make model.'),
+         message: getErrorMessage(error, `Failed to save ${domainConfig.modelSingular.toLowerCase()}.`),
       })
     }
   }
@@ -47,11 +48,11 @@ function MakeModelsPage() {
 
     try {
       await resource.remove(id)
-      setNotice({ type: 'success', message: 'Make model deleted.' })
+       setNotice({ type: 'success', message: `${domainConfig.modelSingular} deleted.` })
     } catch (error) {
       setNotice({
         type: 'error',
-        message: getErrorMessage(error, 'Delete failed.'),
+         message: getErrorMessage(error, `Failed to delete ${domainConfig.modelSingular.toLowerCase()}.`),
       })
     }
   }
@@ -69,8 +70,8 @@ function MakeModelsPage() {
   return (
     <PageShell>
       <NameResourceSection
-        title="Make models"
-        description="Keep make-model names simple and searchable."
+           title={domainConfig.modelPlural}
+           description={`Keep ${domainConfig.modelPlural.toLowerCase()} simple and searchable.`}
         items={resource.items}
         form={form}
         setForm={setForm}

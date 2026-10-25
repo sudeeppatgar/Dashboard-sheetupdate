@@ -1,29 +1,29 @@
 import { assetStatusOptions } from '../../assets/constants'
 import type { AssetStatusCount } from '../../assets/types'
-import type { DashboardData } from '../types'
+import type { DashboardSummaryData } from '../types'
+import { domainConfig } from '../../../shared/config/domain'
 
 type DashboardSummaryProps = {
-  data: DashboardData
+  data: DashboardSummaryData
 }
 
 function DashboardSummary({ data }: DashboardSummaryProps) {
   const resourceCounts = [
-    { label: 'Categories', value: data.categories.length },
-    { label: 'Make models', value: data.makeModels.length },
-    { label: 'Processors', value: data.processors.length },
-    { label: 'Assets', value: data.assets.length },
-    { label: 'Departments', value: data.departments.length },
-    { label: 'Employees', value: data.employees.length },
+    { label: domainConfig.categoryPlural, value: data.totalCategories },
+    { label: domainConfig.modelPlural, value: data.totalMakeModels },
+    { label: domainConfig.recordPlural, value: data.totalAssets },
+    { label: domainConfig.groupPlural, value: data.totalDepartments },
+    { label: domainConfig.personPlural, value: data.totalEmployees },
   ]
 
   const assetStatusCounts: AssetStatusCount[] = assetStatusOptions.map((option) => ({
     ...option,
-    count: data.assets.filter((asset) => (asset.status ?? 'available') === option.value).length,
+    count: data.byStatus[option.value] ?? 0,
   }))
 
   return (
     <>
-      <div className="mt-6 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+      <div className="mt-6 grid gap-3 md:grid-cols-3 lg:grid-cols-5">
         {resourceCounts.map((item) => (
           <div
             key={item.label}

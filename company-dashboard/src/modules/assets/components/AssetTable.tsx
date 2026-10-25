@@ -2,6 +2,7 @@ import { assetStatusOptions } from '../constants'
 import EmptyState from '../../../shared/components/EmptyState'
 import { formatDate } from '../../../shared/utils/formatDate'
 import type { Asset } from '../types'
+import { domainConfig } from '../../../shared/config/domain'
 
 type AssetTableProps = {
   assets: Asset[]
@@ -31,27 +32,31 @@ function AssetTable({
       <table className="min-w-[1180px] w-full border-collapse text-left text-sm">
         <thead className="bg-slate-100 text-slate-600">
           <tr>
-                <th className="px-4 py-3 font-medium">Asset</th>
+                <th className="px-4 py-3 font-medium">{domainConfig.recordSingular}</th>
                 <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Category</th>
-                <th className="px-4 py-3 font-medium">Make model</th>
-                <th className="px-4 py-3 font-medium">Serial</th>
-                <th className="px-4 py-3 font-medium">Location</th>
-                <th className="px-4 py-3 font-medium">Assigned</th>
+                <th className="px-4 py-3 font-medium">{domainConfig.categorySingular}</th>
+                <th className="px-4 py-3 font-medium">{domainConfig.modelSingular}</th>
+                <th className="px-4 py-3 font-medium">{domainConfig.identifierLabel}</th>
+                <th className="px-4 py-3 font-medium">{domainConfig.acquisitionDateLabel}</th>
+                <th className="px-4 py-3 font-medium">Added by</th>
                 {canManage ? <th className="px-4 py-3 font-medium">Actions</th> : null}
               </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 bg-white">
           {assets.length === 0 ? (
             <tr>
-              <td className="px-4 py-8 text-center text-slate-500" colSpan={canManage ? 9 : 8}>
+               <td className="px-4 py-8 text-center text-slate-500" colSpan={canManage ? 8 : 7}>
                 <EmptyState
-                  title={totalCount === 0 ? 'No assets yet' : 'No matching assets'}
+                  title={
+                    totalCount === 0
+                      ? `No ${domainConfig.recordPlural.toLowerCase()} yet`
+                      : `No matching ${domainConfig.recordPlural.toLowerCase()}`
+                  }
                   message={
                     totalCount === 0
                       ? canManage
-                        ? 'Add an asset to start tracking company equipment.'
-                        : 'No assets are currently available to view.'
+                        ? `Add a ${domainConfig.recordSingular.toLowerCase()} to start tracking your records.`
+                        : `No ${domainConfig.recordPlural.toLowerCase()} are currently available to view.`
                       : 'Try changing or clearing the selected filters.'
                   }
                 />
@@ -73,19 +78,18 @@ function AssetTable({
                     <span className="mt-0.5 block text-xs text-cyan-700">View details</span>
                   </button>
                 </td>
+                <td className="px-4 py-3">
+                  <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                    {assetStatusOptions.find(
+                      (option) => option.value === (asset.status ?? 'available'),
+                    )?.label ?? domainConfig.statusLabels.available}
+                  </span>
+                </td>
                 <td className="px-4 py-3 text-slate-600">{asset.categoryId?.name ?? '—'}</td>
                 <td className="px-4 py-3 text-slate-600">{asset.makeModelId?.name ?? '—'}</td>
-                <td className="px-4 py-3 text-slate-600">{asset.processorId?.name ?? '—'}</td>
                 <td className="px-4 py-3 text-slate-600">{asset.serialNumber || '—'}</td>
                 <td className="px-4 py-3 text-slate-600">{formatDate(asset.transactionDate)}</td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                      {assetStatusOptions.find(
-                        (option) => option.value === (asset.status ?? 'available'),
-                      )?.label ?? 'Available'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">{asset.createdBy?.name ?? '—'}</td>
+                <td className="px-4 py-3 text-slate-600">{asset.createdBy?.name ?? '—'}</td>
                 {canManage ? (
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">

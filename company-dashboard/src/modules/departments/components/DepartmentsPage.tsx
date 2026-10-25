@@ -10,6 +10,7 @@ import {
   updateDepartment,
 } from '../api'
 import type { Department } from '../types'
+import { domainConfig } from '../../../shared/config/domain'
 
 export function DepartmentsPage() {
   const { canManage } = useApp()
@@ -51,7 +52,7 @@ export function DepartmentsPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Delete this department?')) return
+    if (!window.confirm(`Delete this ${domainConfig.groupSingular.toLowerCase()}?`)) return
     setSubmitting(true)
     try {
       await deleteDepartment(id)
@@ -66,8 +67,8 @@ export function DepartmentsPage() {
       <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight">Departments</h2>
-            <p className="mt-1 text-sm text-slate-500">Manage organizational departments.</p>
+            <h2 className="text-xl font-semibold tracking-tight">{domainConfig.groupPlural}</h2>
+            <p className="mt-1 text-sm text-slate-500">Manage organizational {domainConfig.groupPlural.toLowerCase()}.</p>
           </div>
         </div>
 
@@ -114,7 +115,7 @@ export function DepartmentsPage() {
           </div>
         ) : (
           <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            You have read-only access to departments.
+            You have read-only access to {domainConfig.groupPlural.toLowerCase()}.
           </div>
         )}
 
@@ -133,8 +134,12 @@ export function DepartmentsPage() {
                 <tr>
                   <td className="px-4 py-8 text-center text-slate-500" colSpan={canManage ? 4 : 3}>
                     <EmptyState
-                      title="No departments yet"
-                      message={canManage ? 'Add a department to get started.' : 'No departments available.'}
+                      title={`No ${domainConfig.groupPlural.toLowerCase()} yet`}
+                      message={
+                        canManage
+                          ? `Add a ${domainConfig.groupSingular.toLowerCase()} to get started.`
+                          : `No ${domainConfig.groupPlural.toLowerCase()} available.`
+                      }
                     />
                   </td>
                 </tr>

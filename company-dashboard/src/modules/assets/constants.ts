@@ -1,17 +1,17 @@
 import type { AssetFilters, AssetFormValue, AssetStatusOption } from './types'
+import { domainConfig } from '../../shared/config/domain'
 
 export const assetStatusOptions: AssetStatusOption[] = [
-  { value: 'available', label: 'Available' },
-  { value: 'assigned', label: 'Assigned' },
-  { value: 'maintenance', label: 'Under repair' },
-  { value: 'retired', label: 'Retired' },
+  { value: 'available', label: domainConfig.statusLabels.available },
+  { value: 'assigned', label: domainConfig.statusLabels.assigned },
+  { value: 'maintenance', label: domainConfig.statusLabels.maintenance },
+  { value: 'retired', label: domainConfig.statusLabels.retired },
 ]
 
 export const emptyAssetForm: AssetFormValue = {
   fullName: '',
   categoryId: '',
   makeModelId: '',
-  processorId: '',
   serialNumber: '',
   status: 'available',
   transactionDate: '',
@@ -36,5 +36,4 @@ export const emptyAssetFilters: AssetFilters = {
   status: 'all',
   categoryId: '',
   makeModelId: '',
-  processorId: '',
 }

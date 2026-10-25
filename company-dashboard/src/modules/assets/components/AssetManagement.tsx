@@ -14,6 +14,7 @@ import type { Asset, AssetFormValue, AssetFilters as AssetFiltersValue } from '.
 import type { Category, MakeModel } from '../../catalog/types'
 import type { Employee } from '../../employees/types'
 import { emptyAssetForm, emptyAssetFilters, getDateInputValue } from '../constants'
+import { domainConfig } from '../../../shared/config/domain'
 
 function AssetManagement() {
   const { canManage, setNotice } = useApp()
@@ -98,7 +99,7 @@ function AssetManagement() {
       condition: asset.condition ?? 'good',
       warrantyStartDate: getDateInputValue(asset.warrantyStartDate),
       warrantyEndDate: getDateInputValue(asset.warrantyEndDate),
-    } as any)
+     })
   }
 
   const handleResetForm = () => {
@@ -165,10 +166,10 @@ function AssetManagement() {
     <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight">Assets</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Assets use linked category, make model, and processor values.
-          </p>
+           <h2 className="text-xl font-semibold tracking-tight">{domainConfig.recordPlural}</h2>
+           <p className="mt-1 text-sm text-slate-500">
+             Manage records with linked categories, variants, ownership, and lifecycle details.
+           </p>
         </div>
       </div>
 

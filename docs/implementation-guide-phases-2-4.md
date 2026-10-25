@@ -1,4 +1,6 @@
-# Implementation Guide: Company Asset Dashboard Phases 2–4
+# Implementation Guide: Operations Workspace Phases 2–4
+
+> This guide documents the original asset-compatible data model and API names. The current frontend exposes domain-neutral terminology through `VITE_*` configuration; existing asset-oriented fields and routes remain compatibility interfaces for stored data and API clients.
 
 This document is an implementation brief for another coding agent. It describes the product intent, architecture rules, data contracts, acceptance criteria, delivery order, and handoff requirements for the next development phases.
 
@@ -11,7 +13,7 @@ Phase 1 is complete as of the current `main` branch. The application currently h
 - React + TypeScript + Vite frontend.
 - Express + Mongoose + MongoDB backend.
 - JWT login and `user`/`admin` roles.
-- CRUD for assets, categories, make/models, and processors.
+- CRUD for records, categories, variants, and reference values.
 - Asset statuses: `available`, `assigned`, `maintenance`, `retired`.
 - Asset search and client-side filters.
 - Asset purchase/transaction date field.
@@ -42,7 +44,7 @@ git log --oneline -10
 
 ## 2. Product direction
 
-The product is an **IT asset management system for small and medium-sized companies**.
+The product is a **configurable operations workspace for organizations in different domains**.
 
 The central business workflow is:
 
@@ -465,7 +467,7 @@ The existing asset detail panel should evolve into the main asset detail experie
 
 - Asset identity and serial number.
 - Status and condition badges.
-- Category, make/model, and processor.
+- Category, variant, and reference value.
 - Current location.
 - Purchase/transaction date.
 - Warranty status and dates.
@@ -753,7 +755,7 @@ Create a deterministic, non-sensitive demo data path:
 
 - Example departments such as Engineering, Operations, and Finance.
 - Example employees with clearly fictional names and addresses.
-- Example categories, make/models, and processors.
+- Example categories, variants, and reference values.
 - Example assets covering every status and condition.
 - Example active, returned, and historical assignments.
 - Example warranties that are active, expiring, and expired.

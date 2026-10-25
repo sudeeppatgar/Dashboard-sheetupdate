@@ -8,6 +8,7 @@ import CategoriesPage from './modules/catalog/components/CategoriesPage'
 import MakeModelsPage from './modules/catalog/components/MakeModelsPage'
 import { DepartmentsPage } from './modules/departments/components/DepartmentsPage'
 import { EmployeesPage } from './modules/employees/components/EmployeesPage'
+import AssetsPage from './modules/assets/components/AssetsPage'
 import MyAssetsPage from './modules/assets/components/MyAssetsPage'
 import Notice from './shared/components/Notice'
 
@@ -31,6 +32,7 @@ function App() {
             <>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/assets" element={<AssetsPage />} />
               <Route path="/categories" element={<CategoriesPage />} />
               <Route path="/make-models" element={<MakeModelsPage />} />
               <Route path="/departments" element={<DepartmentsPage />} />

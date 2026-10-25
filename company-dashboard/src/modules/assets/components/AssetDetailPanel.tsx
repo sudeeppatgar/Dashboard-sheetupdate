@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { getAssetHistory } from '../api'
 import { assetStatusOptions } from '../constants'
-import type { Asset } from '../types'
+import type { Asset, AssetAssignmentHistory } from '../types'
 import { formatDate, formatTimestamp } from '../../../shared/utils/formatDate'
+import { domainConfig } from '../../../shared/config/domain'
 
 type AssetDetailPanelProps = {
   asset: Asset
@@ -17,7 +18,7 @@ const DetailItem = ({ label, value }: { label: string; value: string }) => (
 )
 
 function AssetDetailPanel({ asset, onClose }: AssetDetailPanelProps) {
-  const [history, setHistory] = useState<any[]>([])
+  const [history, setHistory] = useState<AssetAssignmentHistory[]>([])
   useEffect(() => {
     void getAssetHistory(asset._id).then((h) => setHistory(Array.isArray(h) ? h : []))
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -29,7 +30,7 @@ function AssetDetailPanel({ asset, onClose }: AssetDetailPanelProps) {
 
   const status = asset.status ?? 'available'
   const statusLabel =
-    assetStatusOptions.find((option) => option.value === status)?.label ?? 'Available'
+    assetStatusOptions.find((option) => option.value === status)?.label ?? domainConfig.statusLabels.available
 
   return (
     <div
@@ -48,12 +49,12 @@ function AssetDetailPanel({ asset, onClose }: AssetDetailPanelProps) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700">
-              Asset details
+               {domainConfig.recordSingular} details
             </p>
             <h2 id="asset-detail-title" className="mt-1 text-2xl font-semibold tracking-tight">
               {asset.fullName}
             </h2>
-            <p className="mt-1 text-sm text-slate-500">Review linked values and asset history.</p>
+             <p className="mt-1 text-sm text-slate-500">Review linked values and activity history.</p>
           </div>
           <button
             type="button"
@@ -67,22 +68,21 @@ function AssetDetailPanel({ asset, onClose }: AssetDetailPanelProps) {
         </div>
 
         <dl className="mt-6 grid gap-3 sm:grid-cols-2">
-          <DetailItem label="Category" value={asset.categoryId?.name ?? 'Not linked'} />
-          <DetailItem label="Make model" value={asset.makeModelId?.name ?? 'Not linked'} />
-          <DetailItem label="Processor" value={asset.processorId?.name ?? 'Not linked'} />
-          <DetailItem label="Serial number" value={asset.serialNumber || 'Not provided'} />
-          <DetailItem label="Purchase / transaction date" value={formatDate(asset.transactionDate)} />
+           <DetailItem label={domainConfig.categorySingular} value={asset.categoryId?.name ?? 'Not linked'} />
+           <DetailItem label={domainConfig.modelSingular} value={asset.makeModelId?.name ?? 'Not linked'} />
+           <DetailItem label={domainConfig.identifierLabel} value={asset.serialNumber || 'Not provided'} />
+           <DetailItem label={domainConfig.acquisitionDateLabel} value={formatDate(asset.transactionDate)} />
           <DetailItem label="Status" value={statusLabel} />
           <DetailItem label="Added by" value={asset.createdBy?.name ?? '—'} />
           <DetailItem label="Created" value={formatTimestamp(asset.createdAt)} />
           <DetailItem label="Last updated" value={formatTimestamp(asset.updatedAt)} />
         </dl>
         <div className="mt-6">
-          <h3 className="text-sm font-semibold">Assignment history</h3>
+           <h3 className="text-sm font-semibold">Activity history</h3>
           <ul className="mt-2 space-y-2">
             {history.map((h) => (
               <li key={h._id} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-                {h.employeeId?.name ?? 'Employee'} — {h.returnedAt ? `returned ${new Date(h.returnedAt).toLocaleDateString()}` : `assigned ${new Date(h.assignedAt).toLocaleDateString()}`}
+                 {h.employeeId?.name ?? domainConfig.personSingular} — {h.returnedAt ? `returned ${new Date(h.returnedAt).toLocaleDateString()}` : `assigned ${h.assignedAt ? new Date(h.assignedAt).toLocaleDateString() : '—'}`}
               </li>
             ))}
             {history.length === 0 && <li className="text-sm text-slate-500">No history</li>}

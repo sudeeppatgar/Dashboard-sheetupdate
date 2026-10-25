@@ -1,4 +1,5 @@
 import type { AssetFormErrors, AssetFormValue } from '../types'
+import { domainConfig } from '../../../shared/config/domain'
 
 const isValidDateInput = (value: string) => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
@@ -17,17 +18,17 @@ export const validateAssetForm = (form: AssetFormValue): AssetFormErrors => {
   const errors: AssetFormErrors = {}
 
   if (!form.fullName.trim()) {
-    errors.fullName = 'Asset name is required.'
+    errors.fullName = `${domainConfig.recordSingular} name is required.`
   } else if (form.fullName.trim().length < 2) {
-    errors.fullName = 'Asset name must be at least 2 characters.'
+    errors.fullName = `${domainConfig.recordSingular} name must be at least 2 characters.`
   }
 
   if (!form.categoryId) {
-    errors.categoryId = 'Choose a category for this asset.'
+    errors.categoryId = `Choose a ${domainConfig.categorySingular.toLowerCase()} for this ${domainConfig.recordSingular.toLowerCase()}.`
   }
 
   if (form.transactionDate && !isValidDateInput(form.transactionDate)) {
-    errors.transactionDate = 'Enter a valid purchase or transaction date.'
+    errors.transactionDate = `Enter a valid ${domainConfig.acquisitionDateLabel.toLowerCase()}.`
   }
 
   return errors

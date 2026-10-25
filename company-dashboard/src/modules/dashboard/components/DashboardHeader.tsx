@@ -1,10 +1,11 @@
 import type { SessionUser } from '../../auth/types'
-import type { DashboardData } from '../types'
+import type { DashboardSummaryData } from '../types'
 import DashboardSummary from './DashboardSummary'
+import { domainConfig } from '../../../shared/config/domain'
 
 type DashboardHeaderProps = {
   user: SessionUser | null
-  data: DashboardData
+  data: DashboardSummaryData
   onLogout: () => void
 }
 
@@ -17,10 +18,10 @@ function DashboardHeader({ user, data, onLogout }: DashboardHeaderProps) {
             Operations
           </p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-            Company Dashboard
+             {domainConfig.appName}
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Manage the core backend tables from one responsive screen.
+             {domainConfig.appTagline}
           </p>
         </div>
 

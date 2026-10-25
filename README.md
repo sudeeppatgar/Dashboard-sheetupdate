@@ -1,22 +1,49 @@
-# Company Asset Dashboard
+# Operations Workspace
 
-A full-stack IT asset management dashboard for tracking company equipment and the reference data connected to it.
+A configurable full-stack operations workspace for tracking organizational records, reference data, people, groups, and lifecycle activity.
 
-The application gives administrators a single workspace to manage assets, categories, device make/models, and processors. Authenticated read-only users can view inventory without seeing administrative controls.
+The application gives administrators a single workspace to manage records and the reference data connected to them. The default API keeps the existing asset-oriented routes for compatibility, while the frontend vocabulary can be configured for different business domains without changing components.
 
 ## Current capabilities
 
 - JWT-based login with active-user and password-change checks.
 - Admin and read-only user roles.
-- CRUD management for categories, make/models, processors, and assets.
-- Asset lifecycle statuses: Available, Assigned, Under repair, and Retired.
-- Search by asset name or serial number.
-- Filtering by status, category, make/model, and processor.
-- Purchase/transaction date tracking.
-- Asset detail panel with linked records and timestamps.
+- CRUD management for records, categories, variants, groups, and people.
+- Configurable record lifecycle statuses and labels.
+- Search by record name or reference.
+- Filtering by status, category, and variant.
+- Acquisition and coverage date tracking.
+- Record detail panel with linked values and activity history.
 - Reference-data deletion protection when a record is used by an asset.
 - Responsive React dashboard with loading, retry, validation, and empty states.
 - REST API backed by MongoDB and Mongoose.
+
+## Domain configuration
+
+The frontend uses neutral defaults and supports domain-specific terminology through Vite environment variables. Set these in `company-dashboard/.env` without changing the UI components:
+
+```env
+VITE_APP_NAME=Operations Workspace
+VITE_APP_TAGLINE=Manage the records and resources that matter to your organization.
+VITE_RECORD_LABEL=Record
+VITE_RECORD_LABEL_PLURAL=Records
+VITE_CATEGORY_LABEL=Category
+VITE_CATEGORY_LABEL_PLURAL=Categories
+VITE_MODEL_LABEL=Variant
+VITE_MODEL_LABEL_PLURAL=Variants
+VITE_GROUP_LABEL=Group
+VITE_GROUP_LABEL_PLURAL=Groups
+VITE_PERSON_LABEL=Person
+VITE_PERSON_LABEL_PLURAL=People
+VITE_RECORD_IDENTIFIER_LABEL=Reference
+VITE_ACQUISITION_DATE_LABEL=Acquisition date
+VITE_STATUS_AVAILABLE_LABEL=Available
+VITE_STATUS_ASSIGNED_LABEL=Assigned
+VITE_STATUS_MAINTENANCE_LABEL=In service
+VITE_STATUS_RETIRED_LABEL=Archived
+```
+
+The current backend route and field names such as `/assets`, `fullName`, and `serialNumber` remain stable so existing data and API clients continue to work. They are implementation names; the user-facing vocabulary is configurable.
 
 ## Project structure
 
@@ -69,7 +96,7 @@ The frontend `App.tsx` is intentionally kept as an orchestration layer. Feature 
 
 ### 1. Configure the API
 
-Create `api/.env` using the following variable names. Keep the file local; it is ignored by Git.
+Copy `api/.env.example` to `api/.env`, then replace the placeholder values. Keep `api/.env` local; it is ignored by Git.
 
 ```env
 NODE_ENV=development
@@ -149,17 +176,7 @@ PUT    /api/make-models/:id
 DELETE /api/make-models/:id
 ```
 
-### Processors
-
-```http
-GET    /api/processors
-GET    /api/processors/:id
-POST   /api/processors
-PUT    /api/processors/:id
-DELETE /api/processors/:id
-```
-
-### Assets
+### Records
 
 ```http
 GET    /api/assets
@@ -176,15 +193,14 @@ search
 status
 categoryId
 makeModelId
-processorId
 ```
 
-Create and update asset data includes `fullName`, `categoryId`, optional `makeModelId`, optional `processorId`, optional `serialNumber`, optional `status`, and optional `transactionDate`.
+Create and update record data uses the existing compatibility fields `fullName`, `categoryId`, optional `makeModelId`, optional `serialNumber`, optional `status`, and optional `transactionDate`.
 
 ## Roles and permissions
 
-- `user`: can authenticate and read inventory data.
-- `admin`: can create, update, and delete inventory and reference data.
+- `user`: can authenticate and read workspace data.
+- `admin`: can create, update, and delete records and reference data.
 
 The API enforces permissions independently of the frontend. The frontend also hides administrative forms and actions for read-only users.
 

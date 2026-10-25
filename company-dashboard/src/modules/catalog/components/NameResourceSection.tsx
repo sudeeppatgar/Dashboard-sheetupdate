@@ -2,6 +2,7 @@ import { useState } from 'react'
 import EmptyState from '../../../shared/components/EmptyState'
 import FieldError from '../../../shared/components/FieldError'
 import type { CatalogItem, NameResourceController, NameFormErrors } from '../types'
+import { domainConfig } from '../../../shared/config/domain'
 
 export type NameResourceSectionProps = NameResourceController & {
   title: string
@@ -125,7 +126,7 @@ function NameResourceSection({
                     title={`No ${title.toLowerCase()} yet`}
                     message={
                       canManage
-                        ? `Add a ${resourceLabel} to make it available for linked assets.`
+                        ? `Add a ${resourceLabel} to make it available for linked ${domainConfig.recordPlural.toLowerCase()}.`
                         : `No ${title.toLowerCase()} are currently available to view.`
                     }
                   />
