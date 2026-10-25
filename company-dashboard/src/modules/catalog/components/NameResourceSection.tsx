@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import EmptyState from '../../../shared/components/EmptyState'
 import FieldError from '../../../shared/components/FieldError'
+import Button from '../../../shared/components/Button'
+import PageHero from '../../../shared/components/PageHero'
 import type { CatalogItem, NameResourceController, NameFormErrors } from '../types'
 import { domainConfig } from '../../../shared/config/domain'
 
@@ -13,8 +15,6 @@ export type NameResourceSectionProps = NameResourceController & {
 }
 
 const inputClass = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100'
-const secondaryButtonClass = 'rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50'
-const primaryButtonClass = 'rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50'
 
 function NameResourceSection({
   title,
@@ -51,12 +51,8 @@ function NameResourceSection({
   }
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-      <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 px-5 py-7 text-white sm:px-8">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">Workspace setup</p>
-        <h2 className="mt-2 text-3xl font-semibold tracking-tight">Organize your {title.toLowerCase()}</h2>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">{description} Keep names simple and consistent so people can find the right option when creating a record.</p>
-      </div>
+      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <PageHero eyebrow="Workspace setup" title={`Organize your ${title.toLowerCase()}`} description={`${description} Keep names simple and consistent so people can find the right option when creating a record.`} />
 
       {canManage ? (
         <form onSubmit={(event) => void handleSubmit(event)} className="border-b border-slate-200 p-5 sm:p-8">
@@ -66,7 +62,7 @@ function NameResourceSection({
               <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">{editingId ? `Update this ${resourceLabel}` : `Add a new ${resourceLabel}`}</h3>
               <p className="mt-1 text-sm text-slate-500">This name will appear as an option when people manage records.</p>
             </div>
-            {editingId ? <button type="button" onClick={handleReset} className={secondaryButtonClass}>Cancel editing</button> : null}
+            {editingId ? <Button type="button" onClick={handleReset}>Cancel editing</Button> : null}
           </div>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-start">
             <div className="flex-1">
@@ -83,9 +79,9 @@ function NameResourceSection({
               />
               <FieldError id={`${resourceLabel}-error`} message={errors.name} />
             </div>
-            <button type="submit" disabled={submitting} className={`sm:mt-7 ${primaryButtonClass}`}>
+            <Button type="submit" variant="primary" disabled={submitting} className="sm:mt-7">
               {submitting ? 'Saving…' : editingId ? `Save ${resourceLabel}` : `Add ${resourceLabel}`}
-            </button>
+            </Button>
           </div>
         </form>
       ) : (
@@ -123,8 +119,8 @@ function NameResourceSection({
               </div>
               {canManage ? (
                 <div className="mt-4 flex gap-2 border-t border-slate-100 pt-4">
-                  <button type="button" onClick={() => onEdit(item)} className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-700 transition hover:bg-cyan-100">Edit</button>
-                  <button type="button" onClick={() => void onDelete(item._id)} disabled={submitting} className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60">Delete</button>
+                  <Button type="button" variant="accent" size="sm" onClick={() => onEdit(item)}>Edit</Button>
+                  <Button type="button" variant="danger" size="sm" onClick={() => void onDelete(item._id)} disabled={submitting}>Delete</Button>
                 </div>
               ) : null}
             </article>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import PageShell from '../../../shared/components/PageShell'
 import EmptyState from '../../../shared/components/EmptyState'
+import Button from '../../../shared/components/Button'
+import PageHero from '../../../shared/components/PageHero'
 import { useApp } from '../../../shared/context/useApp'
 import { getErrorMessage } from '../../../shared/utils/getErrorMessage'
 import { domainConfig } from '../../../shared/config/domain'
@@ -83,8 +85,6 @@ const createField = (index: number): FieldForm => ({
 })
 
 const inputClass = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100'
-const secondaryButtonClass = 'rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50'
-const primaryButtonClass = 'rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50'
 
 function getFormFields(item: RecordType): FieldForm[] {
   return item.fields.map((field) => ({
@@ -258,14 +258,11 @@ export default function RecordTypesPage() {
   return (
     <PageShell>
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 px-5 py-7 text-white sm:px-8">
-          <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">Workspace setup</p>
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight">Define your {domainConfig.typePlural.toLowerCase()}</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-              A {domainConfig.typeSingular.toLowerCase()} is a template for your records. Set up its workflow and the information people should fill in once, then reuse it everywhere.
-            </p>
-          </div>
+        <PageHero
+          eyebrow="Workspace setup"
+          title={`Define your ${domainConfig.typePlural.toLowerCase()}`}
+          description={`A ${domainConfig.typeSingular.toLowerCase()} is a template for your records. Set up its workflow and the information people should fill in once, then reuse it everywhere.`}
+        >
           <div className="mt-6 grid gap-3 text-sm sm:grid-cols-3">
             {[
               ['1', 'Name it', 'Give the type a name people understand.'],
@@ -281,7 +278,7 @@ export default function RecordTypesPage() {
               </div>
             ))}
           </div>
-        </div>
+        </PageHero>
 
         {canManage ? (
           <form id="record-type-form" onSubmit={(event) => { event.preventDefault(); void submit() }} className="space-y-6 p-5 sm:p-8">
@@ -291,7 +288,7 @@ export default function RecordTypesPage() {
                 <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">{editingId ? `Update this ${domainConfig.typeSingular.toLowerCase()}` : `Add a new ${domainConfig.typeSingular.toLowerCase()}`}</h3>
                 <p className="mt-1 text-sm text-slate-500">You can change these settings later without changing existing records.</p>
               </div>
-              {editingId ? <button type="button" onClick={reset} className={secondaryButtonClass}>Cancel editing</button> : null}
+              {editingId ? <Button type="button" onClick={reset}>Cancel editing</Button> : null}
             </div>
 
             <section>
@@ -356,7 +353,7 @@ export default function RecordTypesPage() {
                   </div>
                 ))}
               </div>
-              <button type="button" onClick={() => setForm((current) => ({ ...current, statuses: [...current.statuses, createStatus(current.statuses.length + 1)] }))} className={`mt-3 ${secondaryButtonClass}`}>+ Add another status</button>
+              <Button type="button" onClick={() => setForm((current) => ({ ...current, statuses: [...current.statuses, createStatus(current.statuses.length + 1)] }))} className="mt-3">+ Add another status</Button>
             </section>
 
             <section className="border-t border-slate-200 pt-6">
@@ -411,7 +408,7 @@ export default function RecordTypesPage() {
                   ))}
                 </div>
               )}
-              <button type="button" onClick={() => setForm((current) => ({ ...current, fields: [...current.fields, createField(current.fields.length + 1)] }))} className={`mt-3 ${secondaryButtonClass}`}>+ Add a custom field</button>
+              <Button type="button" onClick={() => setForm((current) => ({ ...current, fields: [...current.fields, createField(current.fields.length + 1)] }))} className="mt-3">+ Add a custom field</Button>
             </section>
 
             <section className="border-t border-slate-200 pt-6">
@@ -457,8 +454,8 @@ export default function RecordTypesPage() {
                 Make this type available immediately
               </label>
               <div className="flex flex-col gap-3 sm:flex-row">
-                {editingId ? <button type="button" onClick={reset} className={secondaryButtonClass}>Cancel</button> : null}
-                <button type="submit" disabled={submitting} className={primaryButtonClass}>{submitting ? 'Saving…' : editingId ? `Save ${domainConfig.typeSingular.toLowerCase()}` : `Create ${domainConfig.typeSingular.toLowerCase()}`}</button>
+                {editingId ? <Button type="button" onClick={reset}>Cancel</Button> : null}
+                <Button type="submit" variant="primary" disabled={submitting}>{submitting ? 'Saving…' : editingId ? `Save ${domainConfig.typeSingular.toLowerCase()}` : `Create ${domainConfig.typeSingular.toLowerCase()}`}</Button>
               </div>
             </div>
           </form>
@@ -500,9 +497,9 @@ export default function RecordTypesPage() {
               </div>
               {canManage ? (
                 <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-                  <button type="button" onClick={() => startEdit(item)} className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-700 hover:bg-cyan-100">Edit template</button>
-                  <button type="button" onClick={() => void toggleRecordTypeStatus(item._id, !item.isActive).then(load)} className={secondaryButtonClass}>{item.isActive ? 'Hide' : 'Make available'}</button>
-                  <button type="button" onClick={() => void remove(item._id)} disabled={submitting} className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 hover:bg-rose-100 disabled:opacity-50">Delete</button>
+                  <Button type="button" variant="accent" size="sm" onClick={() => startEdit(item)}>Edit template</Button>
+                  <Button type="button" onClick={() => void toggleRecordTypeStatus(item._id, !item.isActive).then(load)} size="sm">{item.isActive ? 'Hide' : 'Make available'}</Button>
+                  <Button type="button" variant="danger" size="sm" onClick={() => void remove(item._id)} disabled={submitting}>Delete</Button>
                 </div>
               ) : null}
             </article>

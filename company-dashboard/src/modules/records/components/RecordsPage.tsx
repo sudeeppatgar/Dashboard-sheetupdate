@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import PageShell from '../../../shared/components/PageShell'
 import EmptyState from '../../../shared/components/EmptyState'
+import Button from '../../../shared/components/Button'
+import PageHero from '../../../shared/components/PageHero'
 import { useApp } from '../../../shared/context/useApp'
 import { getErrorMessage } from '../../../shared/utils/getErrorMessage'
 import { formatDate, formatTimestamp } from '../../../shared/utils/formatDate'
@@ -27,8 +29,6 @@ import { dateInputValue, emptyRecordFilters, emptyRecordForm } from '../constant
 import type { RecordAssignmentHistory, RecordFilters, RecordFormValue, WorkspaceRecord } from '../types'
 
 const inputClass = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100'
-const secondaryButtonClass = 'rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50'
-const primaryButtonClass = 'rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50'
 
 const getId = (value?: { _id?: string } | string) => typeof value === 'string' ? value : value?._id ?? ''
 const getName = (value?: { name?: string } | string) => typeof value === 'string' ? value : value?.name ?? '—'
@@ -94,7 +94,7 @@ function AssignmentDialog({ record, people, mode, submitting, onClose, onSubmit 
             <h2 id="assignment-title" className="mt-1 text-2xl font-semibold text-slate-950">{record.name}</h2>
             <p className="mt-1 text-sm text-slate-500">{mode === 'assign' ? 'Choose who will own this record.' : 'Close the current assignment and add an optional note.'}</p>
           </div>
-          <button type="button" onClick={onClose} className={secondaryButtonClass}>Close</button>
+          <Button type="button" onClick={onClose}>Close</Button>
         </div>
         <form onSubmit={submit} className="mt-6 space-y-4">
           {mode === 'assign' ? (
@@ -115,8 +115,8 @@ function AssignmentDialog({ record, people, mode, submitting, onClose, onSubmit 
             <textarea rows={3} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Add context for the next person" className={inputClass} />
           </label>
           <div className="flex justify-end gap-3 border-t border-slate-200 pt-4">
-            <button type="button" onClick={onClose} className={secondaryButtonClass}>Cancel</button>
-            <button type="submit" disabled={submitting} className={primaryButtonClass}>{submitting ? 'Saving…' : mode === 'assign' ? 'Assign record' : 'Return record'}</button>
+            <Button type="button" onClick={onClose}>Cancel</Button>
+            <Button type="submit" variant="primary" disabled={submitting}>{submitting ? 'Saving…' : mode === 'assign' ? 'Assign record' : 'Return record'}</Button>
           </div>
         </form>
       </section>
@@ -155,7 +155,7 @@ function RecordDetails({ record, recordTypes, onClose }: { record: WorkspaceReco
             <h2 id="record-details-title" className="mt-1 text-2xl font-semibold text-slate-950">{record.name}</h2>
             <p className="mt-1 text-sm text-slate-500">{getName(record.recordTypeId)}</p>
           </div>
-          <button type="button" onClick={onClose} className={secondaryButtonClass}>Close</button>
+          <Button type="button" onClick={onClose}>Close</Button>
         </div>
 
         <dl className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -340,16 +340,12 @@ export default function RecordsPage() {
   return (
     <PageShell>
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 px-5 py-7 text-white sm:px-8">
-          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">Workspace activity</p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-tight">Manage your {domainConfig.recordPlural.toLowerCase()}</h2>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Create, search, update, assign, and track everything your workspace needs to manage.</p>
-            </div>
-            <button type="button" onClick={() => void handleExport()} disabled={exporting} className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/20 disabled:opacity-50">{exporting ? 'Preparing export…' : 'Export visible records'}</button>
-          </div>
-        </div>
+        <PageHero
+          eyebrow="Workspace activity"
+          title={`Manage your ${domainConfig.recordPlural.toLowerCase()}`}
+          description="Create, search, update, assign, and track everything your workspace needs to manage."
+          actions={<Button type="button" variant="hero" onClick={() => void handleExport()} disabled={exporting}>{exporting ? 'Preparing export…' : 'Export visible records'}</Button>}
+        />
 
         {canManage ? (
           <form id="record-form" onSubmit={(event) => { event.preventDefault(); void submit() }} className="space-y-6 border-b border-slate-200 p-5 sm:p-8">
@@ -359,7 +355,7 @@ export default function RecordsPage() {
                 <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">{editingId ? `Update this ${domainConfig.recordSingular.toLowerCase()}` : `Add a new ${domainConfig.recordSingular.toLowerCase()}`}</h3>
                 <p className="mt-1 text-sm text-slate-500">Start with the type and name. The rest of the form adapts to the type you choose.</p>
               </div>
-              {editingId ? <button type="button" onClick={reset} className={secondaryButtonClass}>Cancel editing</button> : null}
+              {editingId ? <Button type="button" onClick={reset}>Cancel editing</Button> : null}
             </div>
 
             {recordTypes.length === 0 ? (
@@ -421,8 +417,8 @@ export default function RecordsPage() {
             ) : null}
 
             <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
-              {editingId ? <button type="button" onClick={reset} className={secondaryButtonClass}>Cancel</button> : null}
-              <button type="submit" disabled={submitting || recordTypes.length === 0} className={primaryButtonClass}>{submitting ? 'Saving…' : editingId ? `Save ${domainConfig.recordSingular.toLowerCase()}` : `Create ${domainConfig.recordSingular.toLowerCase()}`}</button>
+              {editingId ? <Button type="button" onClick={reset}>Cancel</Button> : null}
+              <Button type="submit" variant="primary" disabled={submitting || recordTypes.length === 0}>{submitting ? 'Saving…' : editingId ? `Save ${domainConfig.recordSingular.toLowerCase()}` : `Create ${domainConfig.recordSingular.toLowerCase()}`}</Button>
             </div>
           </form>
         ) : (
@@ -445,7 +441,7 @@ export default function RecordsPage() {
             <label className="block"><span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Status</span><select value={filters.status} onChange={(event) => setFilters((current) => ({ ...current, status: event.target.value }))} className={inputClass}><option value="all">All statuses</option>{statusOptions.map((status) => <option key={status.key} value={status.key}>{status.label}</option>)}</select></label>
             <label className="block"><span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">{domainConfig.typeSingular}</span><select value={filters.recordTypeId} onChange={(event) => setFilters((current) => ({ ...current, recordTypeId: event.target.value }))} className={inputClass}><option value="">All types</option>{recordTypes.map((type) => <option key={type._id} value={type._id}>{type.name}</option>)}</select></label>
             <label className="block"><span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">{domainConfig.categorySingular}</span><select value={filters.categoryId} onChange={(event) => setFilters((current) => ({ ...current, categoryId: event.target.value }))} className={inputClass}><option value="">All categories</option>{categories.map((category) => <option key={category._id} value={category._id}>{category.name}</option>)}</select></label>
-            <button type="button" onClick={() => setFilters({ ...emptyRecordFilters })} className={secondaryButtonClass}>Clear filters</button>
+            <Button type="button" onClick={() => setFilters({ ...emptyRecordFilters })}>Clear filters</Button>
           </div>
         </div>
 
@@ -468,10 +464,10 @@ export default function RecordsPage() {
                   <div><dt className="text-xs uppercase tracking-wide text-slate-400">Location</dt><dd className="mt-0.5 text-slate-700">{item.location || '—'}</dd></div>
                 </dl>
                 <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-                  <button type="button" onClick={() => setSelected(item)} className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-700 hover:bg-cyan-100">View details</button>
-                  {canManage ? <button type="button" onClick={() => startEdit(item)} className={secondaryButtonClass}>Edit</button> : null}
-                  {canManage && type?.assignment?.enabled ? <button type="button" onClick={() => setAssigning({ record: item, mode: item.personId ? 'return' : 'assign' })} className={secondaryButtonClass}>{item.personId ? 'Return' : 'Assign'}</button> : null}
-                  {canManage ? <button type="button" onClick={() => void remove(item._id)} disabled={submitting} className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 hover:bg-rose-100 disabled:opacity-50">Delete</button> : null}
+                  <Button type="button" variant="accent" size="sm" onClick={() => setSelected(item)}>View details</Button>
+                  {canManage ? <Button type="button" size="sm" onClick={() => startEdit(item)}>Edit</Button> : null}
+                  {canManage && type?.assignment?.enabled ? <Button type="button" size="sm" onClick={() => setAssigning({ record: item, mode: item.personId ? 'return' : 'assign' })}>{item.personId ? 'Return' : 'Assign'}</Button> : null}
+                  {canManage ? <Button type="button" variant="danger" size="sm" onClick={() => void remove(item._id)} disabled={submitting}>Delete</Button> : null}
                 </div>
               </article>
             )

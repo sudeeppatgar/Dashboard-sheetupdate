@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import PageShell from '../../../shared/components/PageShell'
 import EmptyState from '../../../shared/components/EmptyState'
+import Button from '../../../shared/components/Button'
+import PageHero from '../../../shared/components/PageHero'
 import { useApp } from '../../../shared/context/useApp'
 import { getErrorMessage } from '../../../shared/utils/getErrorMessage'
 import { domainConfig } from '../../../shared/config/domain'
@@ -21,8 +23,6 @@ type PersonForm = {
 
 const createEmptyForm = (): PersonForm => ({ name: '', reference: '', email: '', groupId: '', title: '', phone: '', location: '' })
 const inputClass = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100'
-const secondaryButtonClass = 'rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50'
-const primaryButtonClass = 'rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50'
 
 const getGroupName = (groupId: Person['groupId'], groups: Group[]) => {
   if (!groupId) return 'No group'
@@ -119,11 +119,7 @@ export default function PeoplePage() {
   return (
     <PageShell>
       <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 px-5 py-7 text-white sm:px-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">Workspace setup</p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight">Manage your {domainConfig.personPlural.toLowerCase()}</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Add the people who can be connected to records or receive assignments. Add only the contact details your team needs.</p>
-        </div>
+        <PageHero eyebrow="Workspace setup" title={`Manage your ${domainConfig.personPlural.toLowerCase()}`} description="Add the people who can be connected to records or receive assignments. Add only the contact details your team needs." />
 
         {canManage ? (
           <form id="person-form" onSubmit={(event) => { event.preventDefault(); void submit() }} className="space-y-6 border-b border-slate-200 p-5 sm:p-8">
@@ -133,7 +129,7 @@ export default function PeoplePage() {
                 <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">{editingId ? `Update this ${domainConfig.personSingular.toLowerCase()}` : `Add a new ${domainConfig.personSingular.toLowerCase()}`}</h3>
                 <p className="mt-1 text-sm text-slate-500">The name is required. Everything else can be added later.</p>
               </div>
-              {editingId ? <button type="button" onClick={reset} className={secondaryButtonClass}>Cancel editing</button> : null}
+              {editingId ? <Button type="button" onClick={reset}>Cancel editing</Button> : null}
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <label className="block">
@@ -170,8 +166,8 @@ export default function PeoplePage() {
               </label>
             </div>
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-              {editingId ? <button type="button" onClick={reset} className={secondaryButtonClass}>Cancel</button> : null}
-              <button type="submit" disabled={submitting} className={primaryButtonClass}>{submitting ? 'Saving…' : editingId ? `Save ${domainConfig.personSingular.toLowerCase()}` : `Add ${domainConfig.personSingular.toLowerCase()}`}</button>
+              {editingId ? <Button type="button" onClick={reset}>Cancel</Button> : null}
+              <Button type="submit" variant="primary" disabled={submitting}>{submitting ? 'Saving…' : editingId ? `Save ${domainConfig.personSingular.toLowerCase()}` : `Add ${domainConfig.personSingular.toLowerCase()}`}</Button>
             </div>
           </form>
         ) : (
@@ -217,9 +213,9 @@ export default function PeoplePage() {
               </dl>
               {canManage ? (
                 <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-                  <button type="button" onClick={() => startEdit(item)} className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-700 hover:bg-cyan-100">Edit person</button>
-                  <button type="button" onClick={() => void togglePersonStatus(item._id, !item.isActive).then(load)} className={secondaryButtonClass}>{item.isActive ? 'Deactivate' : 'Activate'}</button>
-                  <button type="button" onClick={() => void remove(item._id)} disabled={submitting} className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 hover:bg-rose-100 disabled:opacity-50">Delete</button>
+                  <Button type="button" variant="accent" size="sm" onClick={() => startEdit(item)}>Edit person</Button>
+                  <Button type="button" size="sm" onClick={() => void togglePersonStatus(item._id, !item.isActive).then(load)}>{item.isActive ? 'Deactivate' : 'Activate'}</Button>
+                  <Button type="button" variant="danger" size="sm" onClick={() => void remove(item._id)} disabled={submitting}>Delete</Button>
                 </div>
               ) : null}
             </article>

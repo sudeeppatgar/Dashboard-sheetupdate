@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../../../shared/context/useApp'
 import Notice from '../../../shared/components/Notice'
+import Button from '../../../shared/components/Button'
 import type { LoginFormValue } from '../types'
 import { getErrorMessage } from '../../../shared/utils/getErrorMessage'
 import { domainConfig } from '../../../shared/config/domain'
@@ -105,13 +106,14 @@ function LoginPage() {
               />
             </label>
 
-            <button
+            <Button
               type="submit"
+              variant="primary"
               disabled={submitting}
-              className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full"
             >
               {submitting ? 'Signing in...' : 'Sign in to dashboard'}
-            </button>
+            </Button>
           </form>
         </section>
       </div>
