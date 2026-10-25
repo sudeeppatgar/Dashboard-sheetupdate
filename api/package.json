@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "seed": "node seeds/user.seed.js"
+    "seed": "node seeds/user.seed.js",
+    "seed:demo": "node seeds/demo.seed.js",
+    "migrate:legacy": "node scripts/migrate-legacy-data.js"
   },
   "keywords": [],
   "author": "",

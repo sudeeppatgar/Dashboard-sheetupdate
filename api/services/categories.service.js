@@ -1,6 +1,5 @@
 import { ApiError } from "../utils/ApiError.js";
 import Category from "../models/category.model.js";
-import Asset from "../models/asset.model.js";
 import Record from "../models/record.model.js";
 
 export const createCategory = (data) => Category.create(data);
@@ -37,12 +36,7 @@ export const deleteCategory = async (id) => {
     throw new ApiError(404, "Category not found");
   }
 
-  const [assetReference, recordReference] = await Promise.all([
-    Asset.exists({ categoryId: id }),
-    Record.exists({ categoryId: id }),
-  ]);
-
-  if (assetReference || recordReference) {
+  if (await Record.exists({ categoryId: id })) {
     throw new ApiError(
       409,
       "Cannot delete category because it is referenced by one or more records",

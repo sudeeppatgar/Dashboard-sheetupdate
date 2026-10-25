@@ -1,20 +1,61 @@
 import mongoose from "mongoose";
 import { config } from "../config/index.js";
-import Department from "../models/department.model.js";
-import Employee from "../models/employee.model.js";
+import { connectDB } from "../config/db.js";
+import RecordType from "../models/record-type.model.js";
+import Group from "../models/group.model.js";
+import Person from "../models/person.model.js";
 import Category from "../models/category.model.js";
-import Asset from "../models/asset.model.js";
 
 const run = async () => {
-  await mongoose.connect(config.dbUri);
-  const depts = await Department.insertMany([
-    { name: "Engineering", code: "ENG", isActive: true },
-    { name: "Operations", code: "OPS", isActive: true },
-    { name: "Finance", code: "FIN", isActive: true },
-  ], { ordered: false }).catch(() => {});
-  const cats = await Category.insertMany([{ name: "Laptops" }, { name: "Monitors" }], { ordered: false }).catch(() => {});
-  console.log("Seed complete");
+  await connectDB();
+
+  const recordType = await RecordType.findOneAndUpdate(
+    { key: "equipment" },
+    {
+      key: "equipment",
+      name: "Equipment",
+      pluralName: "Equipment",
+      description: "Physical resources tracked by the organization.",
+      statuses: [
+        { key: "available", label: "Available" },
+        { key: "assigned", label: "Assigned" },
+        { key: "maintenance", label: "In service" },
+        { key: "retired", label: "Archived", terminal: true },
+      ],
+      assignment: { enabled: true, assignedStatus: "assigned", availableStatus: "available" },
+      fields: [
+        { key: "condition", label: "Condition", type: "select", options: ["new", "good", "fair", "damaged", "under-repair"] },
+        { key: "warranty-start", label: "Warranty start", type: "date" },
+        { key: "warranty-end", label: "Warranty end", type: "date" },
+      ],
+      isActive: true,
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
+  );
+
+  const groups = await Group.insertMany(
+    [
+      { name: "Engineering", key: "engineering", isActive: true },
+      { name: "Operations", key: "operations", isActive: true },
+      { name: "Finance", key: "finance", isActive: true },
+    ],
+    { ordered: false },
+  ).catch(() => []);
+  const engineering = groups.find((group) => group.key === "engineering") || await Group.findOne({ key: "engineering" });
+
+  await Person.insertMany(
+    [
+      { name: "Demo Person", reference: "DEMO-001", email: "demo.person@example.com", groupId: engineering?._id, isActive: true },
+    ],
+    { ordered: false },
+  ).catch(() => []);
+  await Category.insertMany([{ name: "General" }], { ordered: false }).catch(() => []);
+
+  console.log(`Generic demo seed complete using ${config.dbUri ? "configured" : "missing"} MongoDB URI (${recordType.name})`);
   await mongoose.disconnect();
 };
 
-run().catch((e) => { console.error(e); process.exit(1); });
+run().catch((error) => {
+  console.error("Generic demo seed failed:", error.message);
+  process.exit(1);
+});

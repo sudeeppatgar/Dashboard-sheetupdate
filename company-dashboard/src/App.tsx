@@ -5,11 +5,10 @@ import { Sidebar } from './shared/components/Sidebar'
 import LoginPage from './modules/auth/components/LoginPage'
 import DashboardPage from './modules/dashboard/components/DashboardPage'
 import CategoriesPage from './modules/catalog/components/CategoriesPage'
-import MakeModelsPage from './modules/catalog/components/MakeModelsPage'
-import { DepartmentsPage } from './modules/departments/components/DepartmentsPage'
-import { EmployeesPage } from './modules/employees/components/EmployeesPage'
-import AssetsPage from './modules/assets/components/AssetsPage'
-import MyAssetsPage from './modules/assets/components/MyAssetsPage'
+import RecordTypesPage from './modules/record-types/components/RecordTypesPage'
+import GroupsPage from './modules/groups/components/GroupsPage'
+import PeoplePage from './modules/people/components/PeoplePage'
+import RecordsPage from './modules/records/components/RecordsPage'
 import Notice from './shared/components/Notice'
 
 function App() {
@@ -20,8 +19,6 @@ function App() {
   }
 
   const isAdmin = user?.role === 'admin'
-  const isEmployer = user?.role === 'employer'
-
   return (
     <div className="flex">
       <Sidebar />
@@ -32,24 +29,17 @@ function App() {
             <>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/assets" element={<AssetsPage />} />
+              <Route path="/records" element={<RecordsPage />} />
               <Route path="/categories" element={<CategoriesPage />} />
-              <Route path="/make-models" element={<MakeModelsPage />} />
-              <Route path="/departments" element={<DepartmentsPage />} />
-              <Route path="/employees" element={<EmployeesPage />} />
+              <Route path="/record-types" element={<RecordTypesPage />} />
+              <Route path="/groups" element={<GroupsPage />} />
+              <Route path="/people" element={<PeoplePage />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </>
-          ) : isEmployer ? (
-            <>
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/employees" element={<EmployeesPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
             </>
           ) : (
             <>
-              <Route path="/" element={<MyAssetsPage />} />
-              <Route path="/my-assets" element={<MyAssetsPage />} />
+              <Route path="/" element={<RecordsPage />} />
+              <Route path="/records" element={<RecordsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </>
           )}

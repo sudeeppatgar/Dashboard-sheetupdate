@@ -1,8 +1,9 @@
 export type DashboardSummaryData = {
   totalCategories: number
-  totalMakeModels: number
-  totalAssets: number
-  totalDepartments: number
-  totalEmployees: number
+  totalRecordTypes: number
+  totalRecords: number
+  totalGroups: number
+  totalPeople: number
   byStatus: Record<string, number>
+  byType: Array<{ key?: string; name?: string; count: number }>
 }

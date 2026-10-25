@@ -114,7 +114,18 @@ export const getRecordTypeById = async (id) => {
 
 export const updateRecordType = async (id, data) => {
   const current = await getRecordTypeById(id);
-  const normalized = normalizeRecordType({ ...current.toObject(), ...data });
+  const currentData = current.toObject();
+  const normalized = normalizeRecordType({
+    key: currentData.key,
+    name: currentData.name,
+    pluralName: currentData.pluralName,
+    description: currentData.description,
+    statuses: currentData.statuses,
+    fields: currentData.fields,
+    assignment: currentData.assignment,
+    isActive: currentData.isActive,
+    ...data,
+  });
   const recordType = await RecordType.findByIdAndUpdate(id, normalized, {
     new: true,
     runValidators: true,

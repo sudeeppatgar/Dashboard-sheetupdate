@@ -1,20 +1,8 @@
 import { Router } from "express";
 import { protect } from "../middleware/auth.middleware.js";
-import {
-  summary,
-  byStatus,
-  byCategory,
-  byDepartment,
-  warrantyExpiring,
-  genericSummary,
-} from "../controllers/dashboard.controller.js";
+import { summary } from "../controllers/dashboard.controller.js";
 
 const router = Router();
 router.use(protect);
 router.get("/summary", summary);
-router.get("/assets-by-status", byStatus);
-router.get("/assets-by-category", byCategory);
-router.get("/assets-by-department", byDepartment);
-router.get("/warranty-expiring", warrantyExpiring);
-router.get("/generic-summary", genericSummary);
 export default router;

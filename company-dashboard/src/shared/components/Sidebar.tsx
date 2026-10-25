@@ -4,23 +4,20 @@ import { domainConfig } from '../config/domain'
 
 const adminNavItems = [
   { to: '/dashboard', label: 'Dashboard', end: false },
-  { to: '/assets', label: domainConfig.recordPlural, end: false },
+  { to: '/records', label: domainConfig.recordPlural, end: false },
   { to: '/categories', label: domainConfig.categoryPlural, end: false },
-  { to: '/make-models', label: domainConfig.modelPlural, end: false },
-  { to: '/departments', label: domainConfig.groupPlural, end: false },
-  { to: '/employees', label: domainConfig.personPlural, end: false },
+  { to: '/record-types', label: domainConfig.typePlural, end: false },
+  { to: '/groups', label: domainConfig.groupPlural, end: false },
+  { to: '/people', label: domainConfig.personPlural, end: false },
 ]
 
-const employerNavItems = [
-  { to: '/dashboard', label: 'Dashboard', end: false },
-  { to: '/employees', label: `My ${domainConfig.personPlural}`, end: false },
+const userNavItems = [
+  { to: '/records', label: domainConfig.recordPlural, end: true },
 ]
-
-const userNavItems = [{ to: '/', label: `My ${domainConfig.recordPlural}`, end: true }]
 
 export function Sidebar() {
   const { user } = useApp()
-  const navItems = user?.role === 'admin' ? adminNavItems : user?.role === 'employer' ? employerNavItems : userNavItems
+  const navItems = user?.role === 'admin' ? adminNavItems : userNavItems
 
   return (
     <aside className="w-60 border-r bg-white p-4">

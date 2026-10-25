@@ -1,5 +1,3 @@
-import { assetStatusOptions } from '../../assets/constants'
-import type { AssetStatusCount } from '../../assets/types'
 import type { DashboardSummaryData } from '../types'
 import { domainConfig } from '../../../shared/config/domain'
 
@@ -10,16 +8,12 @@ type DashboardSummaryProps = {
 function DashboardSummary({ data }: DashboardSummaryProps) {
   const resourceCounts = [
     { label: domainConfig.categoryPlural, value: data.totalCategories },
-    { label: domainConfig.modelPlural, value: data.totalMakeModels },
-    { label: domainConfig.recordPlural, value: data.totalAssets },
-    { label: domainConfig.groupPlural, value: data.totalDepartments },
-    { label: domainConfig.personPlural, value: data.totalEmployees },
+    { label: domainConfig.typePlural, value: data.totalRecordTypes },
+    { label: domainConfig.recordPlural, value: data.totalRecords },
+    { label: domainConfig.groupPlural, value: data.totalGroups },
+    { label: domainConfig.personPlural, value: data.totalPeople },
   ]
-
-  const assetStatusCounts: AssetStatusCount[] = assetStatusOptions.map((option) => ({
-    ...option,
-    count: data.byStatus[option.value] ?? 0,
-  }))
+  const statusCounts = Object.entries(data.byStatus)
 
   return (
     <>
@@ -36,12 +30,12 @@ function DashboardSummary({ data }: DashboardSummaryProps) {
       </div>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {assetStatusCounts.map((item) => (
-          <div key={item.value} className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+        {statusCounts.map(([status, count]) => (
+          <div key={status} className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
             <p className="text-xs font-medium uppercase tracking-[0.12em] text-slate-500">
-              {item.label}
+              {domainConfig.statusLabels[status] ?? status}
             </p>
-            <p className="mt-1 text-xl font-semibold text-slate-900">{item.count}</p>
+            <p className="mt-1 text-xl font-semibold text-slate-900">{count}</p>
           </div>
         ))}
       </div>

@@ -75,9 +75,9 @@ const validateReferences = async ({ categoryId, groupId, personId }) => {
 };
 
 const normalizePayload = (data = {}) => ({
-  name: data.name ?? data.fullName,
-  reference: data.reference ?? data.serialNumber,
-  acquiredAt: data.acquiredAt ?? data.transactionDate,
+  name: data.name,
+  reference: data.reference,
+  acquiredAt: data.acquiredAt,
   recordTypeId: data.recordTypeId,
   categoryId: data.categoryId,
   groupId: data.groupId,

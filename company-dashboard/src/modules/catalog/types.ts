@@ -6,13 +6,7 @@ export type Category = {
   createdAt?: string
 }
 
-export type MakeModel = {
-  _id: string
-  name: string
-  createdAt?: string
-}
-
-export type CatalogItem = Category | MakeModel
+export type CatalogItem = Category
 
 export type NameForm = {
   name: string

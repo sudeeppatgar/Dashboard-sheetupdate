@@ -6,7 +6,6 @@ import { getErrorMessage } from '../../../shared/utils/getErrorMessage'
 import NameResourceSection from './NameResourceSection'
 import { createCategory, deleteCategory, getCategories, updateCategory } from '../api'
 import { emptyNameForm } from '../constants'
-import type { CatalogItem } from '../types'
 import type { Category } from '../types'
 import { domainConfig } from '../../../shared/config/domain'
 
@@ -57,7 +56,7 @@ function CategoriesPage() {
     }
   }
 
-  const handleEdit = (item: CatalogItem) => {
+  const handleEdit = (item: Category) => {
     setEditingId(item._id)
     setForm({ name: item.name })
   }

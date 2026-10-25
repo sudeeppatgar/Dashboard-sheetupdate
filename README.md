@@ -2,18 +2,18 @@
 
 A configurable full-stack operations workspace for tracking organizational records, reference data, people, groups, and lifecycle activity.
 
-The application gives administrators a single workspace to manage records and the reference data connected to them. The API now exposes a generic record core for different domains, while the existing asset-oriented routes remain available as compatibility interfaces for the current frontend and older clients.
+The application gives administrators a single workspace to manage records and the reference data connected to them. The backend uses configurable record types, custom fields, groups, people, and assignment history instead of hard-coded business-domain models.
 
 ## Current capabilities
 
 - JWT-based login with active-user and password-change checks.
 - Admin and read-only user roles.
-- CRUD management for records, categories, variants, groups, and people.
+- CRUD management for records, categories, record types, groups, and people.
 - Configurable record types, lifecycle statuses, and custom fields.
 - Generic records, groups, people, and assignment history APIs.
 - Search by record name or reference.
-- Filtering by status, category, and variant.
-- Acquisition and coverage date tracking.
+- Filtering by status, category, and record type.
+- Acquisition date and custom-field tracking.
 - Record detail panel with linked values and activity history.
 - Reference-data deletion protection when a record is in use.
 - Responsive React dashboard with loading, retry, validation, and empty states.
@@ -30,21 +30,21 @@ VITE_RECORD_LABEL=Record
 VITE_RECORD_LABEL_PLURAL=Records
 VITE_CATEGORY_LABEL=Category
 VITE_CATEGORY_LABEL_PLURAL=Categories
-VITE_MODEL_LABEL=Variant
-VITE_MODEL_LABEL_PLURAL=Variants
+VITE_TYPE_LABEL=Record type
+VITE_TYPE_LABEL_PLURAL=Record types
 VITE_GROUP_LABEL=Group
 VITE_GROUP_LABEL_PLURAL=Groups
 VITE_PERSON_LABEL=Person
 VITE_PERSON_LABEL_PLURAL=People
 VITE_RECORD_IDENTIFIER_LABEL=Reference
 VITE_ACQUISITION_DATE_LABEL=Acquisition date
-VITE_STATUS_AVAILABLE_LABEL=Available
-VITE_STATUS_ASSIGNED_LABEL=Assigned
-VITE_STATUS_MAINTENANCE_LABEL=In service
-VITE_STATUS_RETIRED_LABEL=Archived
+VITE_STATUS_ACTIVE_LABEL=Active
+VITE_STATUS_IN_PROGRESS_LABEL=In progress
+VITE_STATUS_COMPLETED_LABEL=Completed
+VITE_STATUS_ARCHIVED_LABEL=Archived
 ```
 
-The compatibility backend route and field names such as `/assets`, `fullName`, and `serialNumber` remain stable so existing data and API clients continue to work. They are implementation names; the user-facing vocabulary is configurable. New integrations should use the generic `/records`, `/record-types`, `/groups`, and `/people` APIs instead.
+The backend API and database model names are domain-neutral. Configure a domain by creating one or more record types with statuses, assignment behavior, and custom fields.
 
 ## Project structure
 
@@ -116,12 +116,21 @@ For local development, `PORT`, `JWT_SECRET`, `JWT_EXPIRES_IN`, and `CORS_ORIGIN`
 cd api
 npm install
 npm run seed
+npm run seed:demo
 npm run dev
 ```
 
+If the database was created by the removed legacy asset model, run the one-time migration before starting the API:
+
+```bash
+npm run migrate:legacy
+```
+
+The migration reads the old MongoDB collections directly and writes generic records, groups, people, and assignment history. Verify the migrated data before archiving or removing the old collections.
+
 The API runs on `http://localhost:4000`.
 
-The seed script creates the local administrator account defined in `api/seeds/user.seed.js`. Use that account for local development only and replace the demo credentials before any deployment.
+`npm run seed` creates the local administrator account defined in `api/seeds/user.seed.js`; `npm run seed:demo` adds a generic Equipment record type and sample reference data. Use demo credentials only for local development and replace them before any deployment.
 
 ### 3. Run the frontend
 
@@ -167,40 +176,35 @@ PUT    /api/categories/:id
 DELETE /api/categories/:id
 ```
 
-### Make/models
-
-```http
-GET    /api/make-models
-GET    /api/make-models/:id
-POST   /api/make-models
-PUT    /api/make-models/:id
-DELETE /api/make-models/:id
-```
-
 ### Records
 
 ```http
-GET    /api/assets
-GET    /api/assets/:id
-POST   /api/assets
-PUT    /api/assets/:id
-DELETE /api/assets/:id
+GET    /api/records
+GET    /api/records/:id
+POST   /api/records                      admin only
+PUT    /api/records/:id                  admin only
+DELETE /api/records/:id                  admin only, guarded
+GET    /api/records/export.csv
+GET    /api/records/:id/assignment
+GET    /api/records/:id/history
+POST   /api/records/:id/assign            admin only
+POST   /api/records/:id/return            admin only
 ```
 
-Asset listing supports these query parameters:
+Record listing supports these query parameters:
 
 ```text
 search
 status
 categoryId
-makeModelId
+recordTypeId
+groupId
+personId
+page
+limit
 ```
 
-Create and update record data uses the existing compatibility fields `fullName`, `categoryId`, optional `makeModelId`, optional `serialNumber`, optional `status`, and optional `transactionDate`.
-
-### Generic domain API
-
-The generic API does not require asset, employee, department, make, or model concepts. A domain is configured by creating a record type with its own statuses and custom fields.
+### Record types
 
 ```http
 GET    /api/record-types
@@ -208,13 +212,6 @@ POST   /api/record-types                 admin only
 PUT    /api/record-types/:id             admin only
 PATCH  /api/record-types/:id/status      admin only
 DELETE /api/record-types/:id             admin only, guarded
-
-GET    /api/records
-GET    /api/records/:id
-POST   /api/records                      admin only
-PUT    /api/records/:id                  admin only
-DELETE /api/records/:id                  admin only, guarded
-GET    /api/records/export.csv
 
 GET    /api/groups
 POST   /api/groups                       admin only
@@ -233,7 +230,7 @@ GET    /api/records/:id/history
 POST   /api/records/:id/assign            admin only
 POST   /api/records/:id/return            admin only
 
-GET    /api/dashboard/generic-summary
+GET    /api/dashboard/summary
 ```
 
 Example record type:
@@ -328,4 +325,4 @@ Before publishing a live demo:
 
 ## Roadmap
 
-The next high-value product feature is migrating the frontend record workspace from the compatibility `/assets` API to the generic `/records` API, including dynamic custom-field forms and record-type selection. That migration should be delivered separately so existing asset data and clients remain safe.
+The next high-value product features are richer custom-field editors, server-side pagination controls, CSV import, audit logs, and deployment automation.
