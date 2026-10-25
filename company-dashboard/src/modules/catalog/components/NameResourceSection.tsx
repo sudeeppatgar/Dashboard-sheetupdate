@@ -12,6 +12,10 @@ export type NameResourceSectionProps = NameResourceController & {
   canManage: boolean
 }
 
+const inputClass = 'w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100'
+const secondaryButtonClass = 'rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50'
+const primaryButtonClass = 'rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50'
+
 function NameResourceSection({
   title,
   description,
@@ -28,12 +32,12 @@ function NameResourceSection({
 }: NameResourceSectionProps) {
   const [validationAttempted, setValidationAttempted] = useState(false)
   const resourceLabel = title.toLowerCase().replace(/ies$/, 'y').replace(/s$/, '')
-  const errors: NameFormErrors =
-    validationAttempted && !form.name.trim()
-      ? { name: `Enter a ${resourceLabel} name.` }
-      : {}
+  const errors: NameFormErrors = validationAttempted && !form.name.trim()
+    ? { name: `Enter a ${resourceLabel} name.` }
+    : {}
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event?: React.FormEvent<HTMLFormElement>) => {
+    event?.preventDefault()
     setValidationAttempted(true)
     if (Object.keys(errors).length > 0) return
 
@@ -47,124 +51,85 @@ function NameResourceSection({
   }
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
-          <p className="mt-1 text-sm text-slate-500">{description}</p>
-        </div>
+    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 px-5 py-7 text-white sm:px-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-300">Workspace setup</p>
+        <h2 className="mt-2 text-3xl font-semibold tracking-tight">Organize your {title.toLowerCase()}</h2>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">{description} Keep names simple and consistent so people can find the right option when creating a record.</p>
       </div>
 
       {canManage ? (
-        <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <div className="flex flex-col gap-3 sm:flex-row">
+        <form onSubmit={(event) => void handleSubmit(event)} className="border-b border-slate-200 p-5 sm:p-8">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700">{editingId ? 'Edit item' : 'Create an item'}</p>
+              <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">{editingId ? `Update this ${resourceLabel}` : `Add a new ${resourceLabel}`}</h3>
+              <p className="mt-1 text-sm text-slate-500">This name will appear as an option when people manage records.</p>
+            </div>
+            {editingId ? <button type="button" onClick={handleReset} className={secondaryButtonClass}>Cancel editing</button> : null}
+          </div>
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-start">
             <div className="flex-1">
+              <label htmlFor={`${resourceLabel}-name`} className="mb-1.5 block text-sm font-medium text-slate-800">{resourceLabel.charAt(0).toUpperCase() + resourceLabel.slice(1)} name <span className="text-rose-500">*</span></label>
               <input
+                id={`${resourceLabel}-name`}
                 value={form.name}
-                onChange={(event) =>
-                  setForm((current) => ({ ...current, name: event.target.value }))
-                }
-                className={`w-full rounded-2xl border bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400 ${
-                  errors.name ? 'border-rose-300' : 'border-slate-200'
-                }`}
-                placeholder={`Add ${title.toLowerCase()}`}
-                aria-label={`${resourceLabel} name`}
+                onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+                className={`${inputClass} ${errors.name ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100' : ''}`}
+                placeholder={`For example, ${resourceLabel === 'category' ? 'Hardware' : 'General'}`}
                 aria-required="true"
                 aria-invalid={Boolean(errors.name)}
-                aria-describedby={
-                  errors.name ? `${resourceLabel.replaceAll(' ', '-')}-error` : undefined
-                }
+                aria-describedby={errors.name ? `${resourceLabel}-error` : undefined}
               />
-              <FieldError
-                id={`${resourceLabel.replaceAll(' ', '-')}-error`}
-                message={errors.name}
-              />
+              <FieldError id={`${resourceLabel}-error`} message={errors.name} />
             </div>
-            <button
-              type="button"
-              onClick={() => void handleSubmit()}
-              disabled={submitting}
-              className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {submitting
-                ? 'Saving...'
-                : editingId
-                  ? `Update ${title.toLowerCase()}`
-                  : `Add ${title.toLowerCase()}`}
+            <button type="submit" disabled={submitting} className={`sm:mt-7 ${primaryButtonClass}`}>
+              {submitting ? 'Saving…' : editingId ? `Save ${resourceLabel}` : `Add ${resourceLabel}`}
             </button>
-            {editingId ? (
-              <button
-                type="button"
-                onClick={handleReset}
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
-              >
-                Reset
-              </button>
-            ) : null}
           </div>
-        </div>
+        </form>
       ) : (
-        <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          You have read-only access to {title.toLowerCase()}.
+        <div className="m-5 rounded-2xl border border-cyan-100 bg-cyan-50 p-4 text-sm text-cyan-900 sm:m-8">
+          <p className="font-semibold">These {title.toLowerCase()} are managed by administrators.</p>
+          <p className="mt-1">You can use the available options when creating records.</p>
         </div>
       )}
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
-        <table className="min-w-[640px] w-full border-collapse text-left text-sm">
-          <thead className="bg-slate-100 text-slate-600">
-            <tr>
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Created</th>
-              {canManage ? <th className="px-4 py-3 font-medium">Actions</th> : null}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 bg-white">
-            {items.length === 0 ? (
-              <tr>
-                <td className="px-4 py-8 text-center text-slate-500" colSpan={canManage ? 3 : 2}>
-                  <EmptyState
-                    title={`No ${title.toLowerCase()} yet`}
-                    message={
-                      canManage
-                        ? `Add a ${resourceLabel} to make it available for linked ${domainConfig.recordPlural.toLowerCase()}.`
-                        : `No ${title.toLowerCase()} are currently available to view.`
-                    }
-                  />
-                </td>
-              </tr>
-            ) : (
-              items.map((item) => (
-                <tr key={item._id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium text-slate-900">{item.name}</td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '—'}
-                  </td>
-                  {canManage ? (
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => onEdit(item)}
-                          className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-700 transition hover:bg-cyan-100"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void onDelete(item._id)}
-                          disabled={submitting}
-                          className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  ) : null}
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      <div className="p-5 sm:p-8">
+        <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700">Saved options</p>
+            <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Available {title.toLowerCase()}</h3>
+          </div>
+          <p className="text-sm text-slate-500">{items.length} {items.length === 1 ? 'option' : 'options'}</p>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {items.length === 0 ? (
+            <div className="sm:col-span-2 lg:col-span-3">
+              <EmptyState
+                title={`No ${title.toLowerCase()} yet`}
+                message={canManage ? `Add a ${resourceLabel} above to make it available for linked ${domainConfig.recordPlural.toLowerCase()}.` : `No ${title.toLowerCase()} are currently available to view.`}
+              />
+            </div>
+          ) : items.map((item) => (
+            <article key={item._id} className="rounded-2xl border border-slate-200 p-4 transition hover:border-cyan-200 hover:shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h4 className="font-semibold text-slate-950">{item.name}</h4>
+                  <p className="mt-1 text-xs text-slate-500">{item.createdAt ? `Added ${new Date(item.createdAt).toLocaleDateString()}` : 'Available for use'}</p>
+                </div>
+                <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Available</span>
+              </div>
+              {canManage ? (
+                <div className="mt-4 flex gap-2 border-t border-slate-100 pt-4">
+                  <button type="button" onClick={() => onEdit(item)} className="rounded-xl border border-cyan-200 bg-cyan-50 px-3 py-2 text-xs font-medium text-cyan-700 transition hover:bg-cyan-100">Edit</button>
+                  <button type="button" onClick={() => void onDelete(item._id)} disabled={submitting} className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60">Delete</button>
+                </div>
+              ) : null}
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   )
