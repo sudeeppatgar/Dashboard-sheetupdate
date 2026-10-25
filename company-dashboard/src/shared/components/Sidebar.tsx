@@ -39,7 +39,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               <p className="truncate text-sm font-bold text-slate-950">{domainConfig.appName}</p>
               <p className="mt-0.5 text-xs text-slate-500">Workspace navigation</p>
             </div>
-          ) : <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-950 text-sm font-bold text-white" title={domainConfig.appName}>{domainConfig.appName.slice(0, 1).toUpperCase()}</span>}
+          ) : null}
           <button type="button" onClick={onToggle} aria-label={isOpen ? 'Close sidebar' : 'Open sidebar'} aria-expanded={isOpen} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-lg text-slate-600 transition hover:border-cyan-300 hover:bg-cyan-50 hover:text-cyan-700">
             <span aria-hidden="true">{isOpen ? '‹' : '›'}</span>
           </button>
