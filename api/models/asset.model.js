@@ -29,11 +29,6 @@ const assetSchema = new mongoose.Schema(
       ref: "MakeModel",
     },
 
-    processorId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Processor",
-    },
-
     serialNumber: String,
 
     status: {

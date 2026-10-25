@@ -34,7 +34,6 @@ export const createAssetValidator = {
     validate: (value) => (isMongoId(value) ? true : "categoryId must be a valid id"),
   },
   makeModelId: objectIdValidator("makeModelId"),
-  processorId: objectIdValidator("processorId"),
   transactionDate: transactionDateValidator,
   serialNumber: {
     required: false,
@@ -58,7 +57,6 @@ export const updateAssetValidator = {
   },
   categoryId: objectIdValidator("categoryId"),
   makeModelId: objectIdValidator("makeModelId"),
-  processorId: objectIdValidator("processorId"),
   transactionDate: transactionDateValidator,
   serialNumber: {
     required: false,
