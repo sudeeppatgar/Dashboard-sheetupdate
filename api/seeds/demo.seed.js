@@ -6,7 +6,7 @@ import Category from "../models/category.model.js";
 import Asset from "../models/asset.model.js";
 
 const run = async () => {
-  await mongoose.connect(config.mongoUri);
+  await mongoose.connect(config.dbUri);
   const depts = await Department.insertMany([
     { name: "Engineering", code: "ENG", isActive: true },
     { name: "Operations", code: "OPS", isActive: true },

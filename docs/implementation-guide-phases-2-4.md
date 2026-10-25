@@ -1,6 +1,6 @@
 # Implementation Guide: Operations Workspace Phases 2–4
 
-> This guide documents the original asset-compatible data model and API names. The current frontend exposes domain-neutral terminology through `VITE_*` configuration; existing asset-oriented fields and routes remain compatibility interfaces for stored data and API clients.
+> This guide documents the original asset-compatible data model and API names. The current frontend exposes domain-neutral terminology through `VITE_*` configuration; existing asset-oriented fields and routes remain compatibility interfaces for stored data and API clients. The backend also includes an additive generic record core for new domains.
 
 This document is an implementation brief for another coding agent. It describes the product intent, architecture rules, data contracts, acceptance criteria, delivery order, and handoff requirements for the next development phases.
 
@@ -21,6 +21,7 @@ Phase 1 is complete as of the current `main` branch. The application currently h
 - Inline validation and loading/error/empty states.
 - Protected deletion of reference data used by assets.
 - Backend services for domain/database logic.
+- Generic backend core with configurable record types, statuses, custom fields, groups, people, and assignments.
 - Frontend feature modules and module-owned types.
 - Production configuration validation and CORS restrictions.
 - Project and setup documentation in the repository root `README.md`.
@@ -81,7 +82,7 @@ company-dashboard/src/modules/<module>/types.ts
 company-dashboard/src/modules/<module>/constants.ts
 company-dashboard/src/modules/<module>/utils/
 company-dashboard/src/shared/
-company-dashboard/src/lib/api.ts
+company-dashboard/src/lib/http.ts
 ```
 
 Backend:
@@ -157,6 +158,8 @@ docs: document deployment and api usage
 Do not combine unrelated features in one commit. Before committing, inspect `git status`, `git diff`, and the recent log. Stage only files belonging to that feature.
 
 ## 4. Delivery order
+
+The generic backend core is additive and does not migrate or remove the original asset collections. New integrations should use the generic API; the asset-compatible API remains the migration and frontend compatibility path.
 
 Implement in this order to keep every step usable:
 

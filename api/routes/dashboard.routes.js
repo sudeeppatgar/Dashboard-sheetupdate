@@ -6,6 +6,7 @@ import {
   byCategory,
   byDepartment,
   warrantyExpiring,
+  genericSummary,
 } from "../controllers/dashboard.controller.js";
 
 const router = Router();
@@ -15,4 +16,5 @@ router.get("/assets-by-status", byStatus);
 router.get("/assets-by-category", byCategory);
 router.get("/assets-by-department", byDepartment);
 router.get("/warranty-expiring", warrantyExpiring);
+router.get("/generic-summary", genericSummary);
 export default router;

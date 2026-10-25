@@ -2,19 +2,20 @@
 
 A configurable full-stack operations workspace for tracking organizational records, reference data, people, groups, and lifecycle activity.
 
-The application gives administrators a single workspace to manage records and the reference data connected to them. The default API keeps the existing asset-oriented routes for compatibility, while the frontend vocabulary can be configured for different business domains without changing components.
+The application gives administrators a single workspace to manage records and the reference data connected to them. The API now exposes a generic record core for different domains, while the existing asset-oriented routes remain available as compatibility interfaces for the current frontend and older clients.
 
 ## Current capabilities
 
 - JWT-based login with active-user and password-change checks.
 - Admin and read-only user roles.
 - CRUD management for records, categories, variants, groups, and people.
-- Configurable record lifecycle statuses and labels.
+- Configurable record types, lifecycle statuses, and custom fields.
+- Generic records, groups, people, and assignment history APIs.
 - Search by record name or reference.
 - Filtering by status, category, and variant.
 - Acquisition and coverage date tracking.
 - Record detail panel with linked values and activity history.
-- Reference-data deletion protection when a record is used by an asset.
+- Reference-data deletion protection when a record is in use.
 - Responsive React dashboard with loading, retry, validation, and empty states.
 - REST API backed by MongoDB and Mongoose.
 
@@ -43,7 +44,7 @@ VITE_STATUS_MAINTENANCE_LABEL=In service
 VITE_STATUS_RETIRED_LABEL=Archived
 ```
 
-The current backend route and field names such as `/assets`, `fullName`, and `serialNumber` remain stable so existing data and API clients continue to work. They are implementation names; the user-facing vocabulary is configurable.
+The compatibility backend route and field names such as `/assets`, `fullName`, and `serialNumber` remain stable so existing data and API clients continue to work. They are implementation names; the user-facing vocabulary is configurable. New integrations should use the generic `/records`, `/record-types`, `/groups`, and `/people` APIs instead.
 
 ## Project structure
 
@@ -197,6 +198,81 @@ makeModelId
 
 Create and update record data uses the existing compatibility fields `fullName`, `categoryId`, optional `makeModelId`, optional `serialNumber`, optional `status`, and optional `transactionDate`.
 
+### Generic domain API
+
+The generic API does not require asset, employee, department, make, or model concepts. A domain is configured by creating a record type with its own statuses and custom fields.
+
+```http
+GET    /api/record-types
+POST   /api/record-types                 admin only
+PUT    /api/record-types/:id             admin only
+PATCH  /api/record-types/:id/status      admin only
+DELETE /api/record-types/:id             admin only, guarded
+
+GET    /api/records
+GET    /api/records/:id
+POST   /api/records                      admin only
+PUT    /api/records/:id                  admin only
+DELETE /api/records/:id                  admin only, guarded
+GET    /api/records/export.csv
+
+GET    /api/groups
+POST   /api/groups                       admin only
+PUT    /api/groups/:id                   admin only
+PATCH  /api/groups/:id/status            admin only
+DELETE /api/groups/:id                   admin only, guarded
+
+GET    /api/people
+POST   /api/people                       admin only
+PUT    /api/people/:id                   admin only
+PATCH  /api/people/:id/status            admin only
+DELETE /api/people/:id                   admin only, guarded
+
+GET    /api/records/:id/assignment
+GET    /api/records/:id/history
+POST   /api/records/:id/assign            admin only
+POST   /api/records/:id/return            admin only
+
+GET    /api/dashboard/generic-summary
+```
+
+Example record type:
+
+```json
+{
+  "key": "support-case",
+  "name": "Support Case",
+  "pluralName": "Support Cases",
+  "statuses": [
+    { "key": "open", "label": "Open" },
+    { "key": "in-progress", "label": "In progress" },
+    { "key": "closed", "label": "Closed", "terminal": true }
+  ],
+  "assignment": { "enabled": false },
+  "fields": [
+    { "key": "priority", "label": "Priority", "type": "select", "required": true, "options": ["low", "high"] },
+    { "key": "summary", "label": "Summary", "type": "multiline" }
+  ]
+}
+```
+
+Example generic record:
+
+```json
+{
+  "recordTypeId": "<record-type-id>",
+  "name": "Unable to access billing portal",
+  "reference": "CASE-1001",
+  "status": "open",
+  "customFields": {
+    "priority": "high",
+    "summary": "Customer cannot sign in to the billing portal."
+  }
+}
+```
+
+The backend validates custom fields against the selected record type, supports server-side search and pagination, and prevents deletion of record types or groups that are still referenced.
+
 ## Roles and permissions
 
 - `user`: can authenticate and read workspace data.
@@ -252,4 +328,4 @@ Before publishing a live demo:
 
 ## Roadmap
 
-The next high-value product feature is employee management and asset assignment. That would extend the current inventory tracker into a complete equipment lifecycle system with assign, return, and history workflows.
+The next high-value product feature is migrating the frontend record workspace from the compatibility `/assets` API to the generic `/records` API, including dynamic custom-field forms and record-type selection. That migration should be delivered separately so existing asset data and clients remain safe.

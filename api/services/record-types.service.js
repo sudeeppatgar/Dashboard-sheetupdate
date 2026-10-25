@@ -1,0 +1,142 @@
+import { ApiError } from "../utils/ApiError.js";
+import RecordType, { DEFAULT_RECORD_STATUSES } from "../models/record-type.model.js";
+import Record from "../models/record.model.js";
+import { escapeRegex, slugify } from "../utils/domain.js";
+
+const normalizeStatuses = (statuses) => {
+  if (statuses === undefined) return DEFAULT_RECORD_STATUSES;
+  if (!Array.isArray(statuses) || statuses.length === 0) {
+    throw new ApiError(400, "statuses must be a non-empty array");
+  }
+
+  const normalized = statuses.map((status) => ({
+    key: slugify(status.key),
+    label: String(status.label || status.key || "").trim(),
+    terminal: Boolean(status.terminal),
+  }));
+  const keys = normalized.map((status) => status.key);
+
+  if (normalized.some((status) => !status.key || !status.label)) {
+    throw new ApiError(400, "Each status requires a key and label");
+  }
+
+  if (new Set(keys).size !== keys.length) {
+    throw new ApiError(400, "Record status keys must be unique");
+  }
+
+  return normalized;
+};
+
+const normalizeFields = (fields) => {
+  if (fields === undefined) return [];
+  if (!Array.isArray(fields)) throw new ApiError(400, "fields must be an array");
+
+  const normalized = fields.map((field) => ({
+    key: slugify(field.key),
+    label: String(field.label || field.key || "").trim(),
+    type: field.type || "text",
+    required: Boolean(field.required),
+    options: Array.isArray(field.options) ? field.options.map((option) => String(option)) : undefined,
+  }));
+  const keys = normalized.map((field) => field.key);
+  const validTypes = new Set(["text", "multiline", "number", "date", "boolean", "select"]);
+
+  if (normalized.some((field) => !field.key || !field.label)) {
+    throw new ApiError(400, "Each custom field requires a key and label");
+  }
+
+  if (normalized.some((field) => !validTypes.has(field.type))) {
+    throw new ApiError(400, "Custom field type is not supported");
+  }
+
+  if (normalized.some((field) => field.type === "select" && (!field.options || field.options.length === 0))) {
+    throw new ApiError(400, "Select custom fields require options");
+  }
+
+  if (new Set(keys).size !== keys.length) {
+    throw new ApiError(400, "Custom field keys must be unique");
+  }
+
+  return normalized;
+};
+
+const normalizeRecordType = (data = {}) => {
+  const statuses = normalizeStatuses(data.statuses);
+  const fields = normalizeFields(data.fields);
+  const assignment = {
+    enabled: data.assignment?.enabled === true,
+    assignedStatus: slugify(data.assignment?.assignedStatus || "assigned"),
+    availableStatus: slugify(data.assignment?.availableStatus || "available"),
+  };
+
+  if (assignment.enabled) {
+    const statusKeys = new Set(statuses.map((status) => status.key));
+    if (!statusKeys.has(assignment.assignedStatus) || !statusKeys.has(assignment.availableStatus)) {
+      throw new ApiError(400, "Assignment statuses must exist in the record type statuses");
+    }
+  }
+
+  return {
+    ...data,
+    key: slugify(data.key || data.name),
+    name: String(data.name || "").trim(),
+    pluralName: data.pluralName ? String(data.pluralName).trim() : undefined,
+    description: data.description ? String(data.description).trim() : undefined,
+    statuses,
+    fields,
+    assignment,
+  };
+};
+
+export const createRecordType = async (data) => {
+  const normalized = normalizeRecordType(data);
+  if (!normalized.name) throw new ApiError(400, "name is required");
+  return RecordType.create(normalized);
+};
+
+export const getRecordTypes = async (filters = {}) => {
+  const query = {};
+  if (filters.search) {
+    const regex = new RegExp(escapeRegex(filters.search), "i");
+    query.$or = [{ name: regex }, { key: regex }];
+  }
+  if (typeof filters.isActive !== "undefined" && filters.isActive !== "") {
+    query.isActive = filters.isActive === "true" || filters.isActive === true;
+  }
+  return RecordType.find(query).sort({ name: 1 });
+};
+
+export const getRecordTypeById = async (id) => {
+  const recordType = await RecordType.findById(id);
+  if (!recordType) throw new ApiError(404, "Record type not found");
+  return recordType;
+};
+
+export const updateRecordType = async (id, data) => {
+  const current = await getRecordTypeById(id);
+  const normalized = normalizeRecordType({ ...current.toObject(), ...data });
+  const recordType = await RecordType.findByIdAndUpdate(id, normalized, {
+    new: true,
+    runValidators: true,
+  });
+  return recordType;
+};
+
+export const toggleRecordTypeStatus = async (id, isActive) => {
+  const recordType = await RecordType.findByIdAndUpdate(
+    id,
+    { isActive: Boolean(isActive) },
+    { new: true, runValidators: true },
+  );
+  if (!recordType) throw new ApiError(404, "Record type not found");
+  return recordType;
+};
+
+export const deleteRecordType = async (id) => {
+  const recordType = await getRecordTypeById(id);
+  if (await Record.exists({ recordTypeId: id })) {
+    throw new ApiError(409, "Cannot delete a record type that is in use");
+  }
+  await RecordType.findByIdAndDelete(id);
+  return recordType;
+};
