@@ -1,18 +1,26 @@
 import Asset from "../models/asset.model.js";
 import Employee from "../models/employee.model.js";
 import Department from "../models/department.model.js";
+import Category from "../models/category.model.js";
+import MakeModel from "../models/makeModel.model.js";
 
 export const getSummary = async () => {
-  const [total, byStatus] = await Promise.all([
+  const [totalAssets, byStatus, totalEmployees, totalDepartments, totalCategories, totalMakeModels] = await Promise.all([
     Asset.countDocuments(),
     Asset.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
+    Employee.countDocuments(),
+    Department.countDocuments(),
+    Category.countDocuments(),
+    MakeModel.countDocuments(),
   ]);
   const statusMap = byStatus.reduce((acc, s) => { acc[s._id] = s.count; return acc; }, {});
   return {
-    totalAssets: total,
+    totalAssets,
     byStatus: statusMap,
-    totalEmployees: await Employee.countDocuments(),
-    totalDepartments: await Department.countDocuments(),
+    totalEmployees,
+    totalDepartments,
+    totalCategories,
+    totalMakeModels,
   };
 };
 
