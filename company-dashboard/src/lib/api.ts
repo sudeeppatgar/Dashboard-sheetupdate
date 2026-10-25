@@ -101,6 +101,7 @@ export const exportAssetsCsvUrl = (filters?: Record<string, string>) => {
 }
 export const getAssetAssignment = async (id: string) => (await api.get(`/assets/${id}/assignment`)).data.data
 export const getAssetHistory = async (id: string) => (await api.get(`/assets/${id}/history`)).data.data
+export const getMyAssets = async () => (await api.get('/assets/my-assets')).data.data
 export const assignAsset = async (id: string, payload: any) => (await api.post(`/assets/${id}/assign`, payload)).data.data
 export const returnAsset = async (id: string, payload: any) => (await api.post(`/assets/${id}/return`, payload)).data.data
 export const getEmployees = async (): Promise<Employee[]> => {
