@@ -105,29 +105,36 @@ export function EmployeesPage() {
 
         {canManage ? (
           <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <input
                 value={form.employeeNumber}
                 onChange={(e) => setForm({ ...form, employeeNumber: e.target.value })}
                 placeholder="Number"
-                className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+                className="flex-1 min-w-[200px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
               />
               <input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="Name"
-                className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+                className="flex-1 min-w-[200px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
               />
               <input
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 placeholder="Email"
-                className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+                className="flex-1 min-w-[200px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+              />
+              <input
+                value={(form as any).password || ''}
+                onChange={(e) => setForm({ ...form, password: e.target.value } as any)}
+                placeholder="Password"
+                type="password"
+                className="flex-1 min-w-[200px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
               />
               <select
                 value={form.departmentId}
                 onChange={(e) => setForm({ ...form, departmentId: e.target.value })}
-                className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+                className="flex-1 min-w-[200px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
               >
                 <option value="">Select department</option>
                 {departments.map((d) => (
@@ -140,7 +147,7 @@ export function EmployeesPage() {
                 value={form.jobTitle}
                 onChange={(e) => setForm({ ...form, jobTitle: e.target.value })}
                 placeholder="Job title"
-                className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
+                className="flex-1 min-w-[200px] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
               />
               <button
                 onClick={() => void submit()}
@@ -153,14 +160,7 @@ export function EmployeesPage() {
                 <button
                   onClick={() => {
                     setEditingId(null)
-                    setForm({
-                      employeeNumber: '',
-                      name: '',
-                      email: '',
-                      departmentId: '',
-                      jobTitle: '',
-                      isActive: true,
-                    })
+                    setForm({ employeeNumber: '', name: '', email: '', departmentId: '', jobTitle: '', isActive: true } as any)
                   }}
                   className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
                 >
