@@ -31,16 +31,15 @@ function AssetTable({
       <table className="min-w-[1180px] w-full border-collapse text-left text-sm">
         <thead className="bg-slate-100 text-slate-600">
           <tr>
-            <th className="px-4 py-3 font-medium">Asset</th>
-            <th className="px-4 py-3 font-medium">Category</th>
-            <th className="px-4 py-3 font-medium">Make model</th>
-            <th className="px-4 py-3 font-medium">Processor</th>
-            <th className="px-4 py-3 font-medium">Serial</th>
-            <th className="px-4 py-3 font-medium">Purchase / transaction</th>
-            <th className="px-4 py-3 font-medium">Status</th>
-            <th className="px-4 py-3 font-medium">Added by</th>
-            {canManage ? <th className="px-4 py-3 font-medium">Actions</th> : null}
-          </tr>
+                <th className="px-4 py-3 font-medium">Asset</th>
+                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Category</th>
+                <th className="px-4 py-3 font-medium">Make model</th>
+                <th className="px-4 py-3 font-medium">Serial</th>
+                <th className="px-4 py-3 font-medium">Location</th>
+                <th className="px-4 py-3 font-medium">Assigned</th>
+                {canManage ? <th className="px-4 py-3 font-medium">Actions</th> : null}
+              </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 bg-white">
           {assets.length === 0 ? (

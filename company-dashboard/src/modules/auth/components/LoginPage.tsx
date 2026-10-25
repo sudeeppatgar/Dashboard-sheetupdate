@@ -56,7 +56,7 @@ function LoginPage() {
               </h1>
               <p className="max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
                 Log in with the token-backed API, keep the session in localStorage,
-                and manage categories, make models, processors, and assets in one place.
+                and manage categories, make models, and assets in one place.
               </p>
             </div>
 

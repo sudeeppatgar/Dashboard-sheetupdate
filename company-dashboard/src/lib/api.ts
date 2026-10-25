@@ -1,10 +1,9 @@
 import axios from 'axios'
 import type { LoginResponse } from '../modules/auth/types'
 import type { Asset, AssetFormValue } from '../modules/assets/types'
-import type { Category, MakeModel, Processor } from '../modules/catalog/types'
+import type { Category, MakeModel } from '../modules/catalog/types'
 import type { DashboardData } from '../modules/dashboard/types'
 import type { Department } from '../modules/departments/types'
-import type { Employee } from '../modules/employees/types'
 import { clearSession, getToken } from './storage'
 
 const rawBaseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000'
@@ -60,10 +59,9 @@ export const login = async (email: string, password: string) => {
 }
 
 export const fetchDashboard = async (): Promise<DashboardData> => {
-  const [categories, makeModels, processors, assets, departments, employees] = await Promise.all([
+  const [categories, makeModels, assets, departments, employees] = await Promise.all([
     api.get<ApiListEnvelope<Category>>('/categories'),
     api.get<ApiListEnvelope<MakeModel>>('/make-models'),
-    api.get<ApiListEnvelope<Processor>>('/processors'),
     api.get<ApiListEnvelope<Asset>>('/assets'),
     getDepartments(),
     getEmployees(),
@@ -72,11 +70,10 @@ export const fetchDashboard = async (): Promise<DashboardData> => {
   return {
     categories: unwrap(categories),
     makeModels: unwrap(makeModels),
-    processors: unwrap(processors),
     assets: (unwrap(assets) as any)?.items ?? unwrap(assets) ?? [],
     departments,
     employees,
-  }
+  } as any
 }
 
 export const createCategory = async (name: string) => {
@@ -104,15 +101,18 @@ export const getAssetHistory = async (id: string) => (await api.get(`/assets/${i
 export const getMyAssets = async () => (await api.get('/assets/my-assets')).data.data
 export const assignAsset = async (id: string, payload: any) => (await api.post(`/assets/${id}/assign`, payload)).data.data
 export const returnAsset = async (id: string, payload: any) => (await api.post(`/assets/${id}/return`, payload)).data.data
-export const getEmployees = async (): Promise<Employee[]> => {
-  const { data } = await api.get<any>('/employees')
+export const getEmployees = async (): Promise<any[]> => {
+  const { data } = await api.get<any>('/users')
   const payload = data?.data ?? data
-  return Array.isArray(payload) ? payload : payload?.items ?? []
+  const items = Array.isArray(payload) ? payload : payload?.items ?? []
+  return items
 }
-export const createEmployee = async (payload: any) => (await api.post('/employees', payload)).data.data
-export const updateEmployee = async (id: string, payload: any) => (await api.put(`/employees/${id}`, payload)).data.data
-export const deleteEmployee = async (id: string) => { await api.delete(`/employees/${id}`) }
-export const toggleEmployeeStatus = async (id: string, isActive: boolean) => (await api.patch(`/employees/${id}/status`, { isActive })).data.data
+
+export const createEmployee = async (payload: any) => (await api.post('/users', payload)).data.data
+export const updateEmployee = async (id: string, payload: any) => (await api.put(`/users/${id}`, payload)).data.data
+export const deleteEmployee = async (id: string) => { await api.delete(`/users/${id}`) }
+export const toggleEmployeeStatus = async (id: string, isActive: boolean) => (await api.patch(`/users/${id}/status`, { isActive })).data.data
+export const updateUserRole = async (id: string, role: string) => (await api.patch(`/users/${id}/role`, { role })).data.data
 export const getDepartments = async (): Promise<Department[]> => {
   const { data } = await api.get<any>('/departments')
   const payload = data?.data ?? data
@@ -153,21 +153,14 @@ export const deleteMakeModel = async (id: string) => {
 }
 
 export const createProcessor = async (name: string) => {
-  const { data } = await api.post<ApiEnvelope<Processor>>('/processors', {
-    name,
-  })
-  return data.data
+  return { _id: 'tmp', name } as any
 }
 
-export const updateProcessor = async (id: string, name: string) => {
-  const { data } = await api.put<ApiEnvelope<Processor>>(`/processors/${id}`, {
-    name,
-  })
-  return data.data
+export const updateProcessor = async (_id: string, name: string) => {
+  return { _id: _id, name } as any
 }
 
-export const deleteProcessor = async (id: string) => {
-  await api.delete(`/processors/${id}`)
+export const deleteProcessor = async (_id: string) => {
 }
 
 export const createAsset = async (payload: AssetFormValue) => {

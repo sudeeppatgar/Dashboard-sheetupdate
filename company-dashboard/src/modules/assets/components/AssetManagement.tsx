@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { assignAsset, createAsset, deleteAsset, getAssets, returnAsset, updateAsset } from '../api'
-import { getCategories, getMakeModels, getProcessors } from '../../catalog/api'
+import { getCategories, getMakeModels } from '../../catalog/api'
 import { getEmployees } from '../../employees/api'
 import AssetDetailPanel from './AssetDetailPanel'
 import AssetFilters from './AssetFilters'
@@ -11,7 +11,7 @@ import { useCrudResource } from '../../../shared/hooks/useCrudResource'
 import { getErrorMessage } from '../../../shared/utils/getErrorMessage'
 import { useApp } from '../../../shared/context/useApp'
 import type { Asset, AssetFormValue, AssetFilters as AssetFiltersValue } from '../types'
-import type { Category, MakeModel, Processor } from '../../catalog/types'
+import type { Category, MakeModel } from '../../catalog/types'
 import type { Employee } from '../../employees/types'
 import { emptyAssetForm, emptyAssetFilters, getDateInputValue } from '../constants'
 
@@ -26,7 +26,6 @@ function AssetManagement() {
   const [dialogSubmitting, setDialogSubmitting] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
   const [makeModels, setMakeModels] = useState<MakeModel[]>([])
-  const [processors, setProcessors] = useState<Processor[]>([])
   const [employees, setEmployees] = useState<Employee[]>([])
 
   const assets = useCrudResource<Asset, AssetFormValue, AssetFormValue>({
@@ -38,16 +37,14 @@ function AssetManagement() {
 
   useEffect(() => {
     const loadOptions = async () => {
-      const [categoryList, makeModelList, processorList, employeeList] = await Promise.all([
+      const [categoryList, makeModelList, userList] = await Promise.all([
         getCategories(),
         getMakeModels(),
-        getProcessors(),
         getEmployees(),
       ])
       setCategories(categoryList)
       setMakeModels(makeModelList)
-      setProcessors(processorList)
-      setEmployees(employeeList)
+      setEmployees(userList)
     }
 
     void loadOptions()
@@ -94,7 +91,6 @@ function AssetManagement() {
       fullName: asset.fullName,
       categoryId: asset.categoryId?._id ?? '',
       makeModelId: asset.makeModelId?._id ?? '',
-      processorId: asset.processorId?._id ?? '',
       serialNumber: asset.serialNumber ?? '',
       status: asset.status ?? 'available',
       transactionDate: getDateInputValue(asset.transactionDate),
@@ -102,7 +98,7 @@ function AssetManagement() {
       condition: asset.condition ?? 'good',
       warrantyStartDate: getDateInputValue(asset.warrantyStartDate),
       warrantyEndDate: getDateInputValue(asset.warrantyEndDate),
-    })
+    } as any)
   }
 
   const handleResetForm = () => {
@@ -144,11 +140,6 @@ function AssetManagement() {
     [makeModels]
   )
 
-  const processorOptions = useMemo(
-    () => processors.map((item) => ({ value: item._id, label: item.name })),
-    [processors]
-  )
-
   const filteredAssets = useMemo(() => {
     const search = filters.search.trim().toLowerCase()
 
@@ -161,9 +152,8 @@ function AssetManagement() {
       const matchesStatus = filters.status === 'all' || assetStatus === filters.status
       const matchesCategory = !filters.categoryId || asset.categoryId?._id === filters.categoryId
       const matchesMakeModel = !filters.makeModelId || asset.makeModelId?._id === filters.makeModelId
-      const matchesProcessor = !filters.processorId || asset.processorId?._id === filters.processorId
 
-      return matchesSearch && matchesStatus && matchesCategory && matchesMakeModel && matchesProcessor
+      return matchesSearch && matchesStatus && matchesCategory && matchesMakeModel
     })
   }, [assets.items, filters])
 
@@ -187,7 +177,6 @@ function AssetManagement() {
         setForm={setForm}
         categoryOptions={categoryOptions}
         makeModelOptions={makeModelOptions}
-        processorOptions={processorOptions}
         editingId={editingId}
         submitting={assets.submitting}
         onSubmit={handleSubmit}
@@ -199,7 +188,6 @@ function AssetManagement() {
         setFilters={setFilters}
         categoryOptions={categoryOptions}
         makeModelOptions={makeModelOptions}
-        processorOptions={processorOptions}
         filteredCount={filteredAssets.length}
         totalCount={assets.items.length}
       />

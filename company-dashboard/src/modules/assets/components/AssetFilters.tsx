@@ -7,7 +7,6 @@ type AssetFiltersProps = {
   setFilters: Dispatch<SetStateAction<AssetFiltersValue>>
   categoryOptions: AssetOption[]
   makeModelOptions: AssetOption[]
-  processorOptions: AssetOption[]
   filteredCount: number
   totalCount: number
 }
@@ -17,16 +16,14 @@ function AssetFilters({
   setFilters,
   categoryOptions,
   makeModelOptions,
-  processorOptions,
   filteredCount,
   totalCount,
 }: AssetFiltersProps) {
   const hasFilters =
-    Boolean(filters.search) ||
+    filters.search.trim().length > 0 ||
     filters.status !== 'all' ||
     Boolean(filters.categoryId) ||
-    Boolean(filters.makeModelId) ||
-    Boolean(filters.processorId)
+    Boolean(filters.makeModelId)
 
   return (
     <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -110,28 +107,6 @@ function AssetFilters({
             >
               <option value="">All make models</option>
               {makeModelOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="block sm:w-44">
-            <span className="sr-only">Processor</span>
-            <select
-              aria-label="Filter by processor"
-              value={filters.processorId}
-              onChange={(event) =>
-                setFilters((current) => ({
-                  ...current,
-                  processorId: event.target.value,
-                }))
-              }
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
-            >
-              <option value="">All processors</option>
-              {processorOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>

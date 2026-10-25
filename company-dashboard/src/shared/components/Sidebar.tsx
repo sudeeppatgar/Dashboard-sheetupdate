@@ -1,15 +1,25 @@
 import { NavLink } from 'react-router-dom'
+import { useApp } from '../context/useApp'
 
-const navItems = [
-  { to: '/dashboard', label: 'Dashboard', end: true },
+const adminNavItems = [
+  { to: '/dashboard', label: 'Dashboard', end: false },
   { to: '/categories', label: 'Categories', end: false },
   { to: '/make-models', label: 'Make models', end: false },
-  { to: '/processors', label: 'Processors', end: false },
   { to: '/departments', label: 'Departments', end: false },
-  { to: '/employees', label: 'Employees', end: false },
+  { to: '/employees', label: 'Users', end: false },
 ]
 
+const employerNavItems = [
+  { to: '/dashboard', label: 'Dashboard', end: false },
+  { to: '/employees', label: 'My Employees', end: false },
+]
+
+const userNavItems = [{ to: '/', label: 'My Assets', end: true }]
+
 export function Sidebar() {
+  const { user } = useApp()
+  const navItems = user?.role === 'admin' ? adminNavItems : user?.role === 'employer' ? employerNavItems : userNavItems
+
   return (
     <aside className="w-60 border-r bg-white p-4">
       <nav className="flex flex-col gap-2">
@@ -31,3 +41,4 @@ export function Sidebar() {
     </aside>
   )
 }
+

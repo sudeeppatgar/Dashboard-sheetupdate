@@ -37,7 +37,6 @@ function MyAssetsPage() {
                 <th className="px-4 py-3 font-medium">Asset</th>
                 <th className="px-4 py-3 font-medium">Category</th>
                 <th className="px-4 py-3 font-medium">Make model</th>
-                <th className="px-4 py-3 font-medium">Processor</th>
                 <th className="px-4 py-3 font-medium">Serial</th>
                 <th className="px-4 py-3 font-medium">Assigned</th>
                 <th className="px-4 py-3 font-medium">Location</th>
@@ -64,7 +63,6 @@ function MyAssetsPage() {
                       <td className="px-4 py-3 font-medium text-slate-900">{asset.fullName}</td>
                       <td className="px-4 py-3 text-slate-600">{asset.categoryId?.name ?? '—'}</td>
                       <td className="px-4 py-3 text-slate-600">{asset.makeModelId?.name ?? '—'}</td>
-                      <td className="px-4 py-3 text-slate-600">{asset.processorId?.name ?? '—'}</td>
                       <td className="px-4 py-3 text-slate-600">{asset.serialNumber || '—'}</td>
                       <td className="px-4 py-3 text-slate-600">{formatDate(assignment.assignedAt)}</td>
                       <td className="px-4 py-3 text-slate-600">{asset.location || '—'}</td>

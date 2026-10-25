@@ -9,7 +9,6 @@ type AssetFormProps = {
   setForm: Dispatch<SetStateAction<AssetFormValue>>
   categoryOptions: AssetOption[]
   makeModelOptions: AssetOption[]
-  processorOptions: AssetOption[]
   editingId: string | null
   submitting: boolean
   onSubmit: () => Promise<void>
@@ -21,7 +20,6 @@ function AssetForm({
   setForm,
   categoryOptions,
   makeModelOptions,
-  processorOptions,
   editingId,
   submitting,
   onSubmit,
@@ -151,29 +149,6 @@ function AssetForm({
           >
             <option value="">Select make model</option>
             {makeModelOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="block md:col-span-2">
-          <span className="mb-2 block text-sm font-medium text-slate-700">
-            Processor <span className="font-normal text-slate-400">(optional)</span>
-          </span>
-          <select
-            value={form.processorId}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                processorId: event.target.value,
-              }))
-            }
-            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-cyan-400"
-          >
-            <option value="">Select processor</option>
-            {processorOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
