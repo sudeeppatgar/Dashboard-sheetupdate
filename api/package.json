@@ -8,7 +8,8 @@
     "start": "node server.js",
     "seed": "node seeds/user.seed.js",
     "seed:demo": "node seeds/demo.seed.js",
-    "migrate:legacy": "node scripts/migrate-legacy-data.js"
+    "migrate:legacy": "node scripts/migrate-legacy-data.js",
+    "migrate:workspace": "node scripts/migrate-workspace-ownership.js"
   },
   "keywords": [],
   "author": "",

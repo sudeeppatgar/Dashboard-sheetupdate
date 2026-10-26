@@ -27,6 +27,11 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
 
+    workspaceOwnerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
     isActive: {
       type: Boolean,
       default: true,
@@ -38,6 +43,8 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+userSchema.index({ workspaceOwnerId: 1 });
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {

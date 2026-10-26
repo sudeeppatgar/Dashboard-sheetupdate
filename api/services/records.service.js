@@ -7,9 +7,9 @@ import RecordAssignment from "../models/record-assignment.model.js";
 import RecordType from "../models/record-type.model.js";
 import { escapeRegex, hasValue, isPlainObject } from "../utils/domain.js";
 
-const getType = async (recordTypeId) => {
+const getType = async (recordTypeId, workspaceOwnerId) => {
   if (!recordTypeId) throw new ApiError(400, "recordTypeId is required");
-  const recordType = await RecordType.findById(recordTypeId);
+  const recordType = await RecordType.findOne({ _id: recordTypeId, workspaceOwnerId });
   if (!recordType) throw new ApiError(400, "Record type not found");
   if (!recordType.isActive) throw new ApiError(400, "Record type is inactive");
   return recordType;
@@ -61,11 +61,11 @@ const validateCustomFields = (recordType, customFields = {}) => {
   if (errors.length > 0) throw new ApiError(400, "Custom field validation failed", errors);
 };
 
-const validateReferences = async ({ categoryId, groupId, personId }) => {
+const validateReferences = async ({ categoryId, groupId, personId }, workspaceOwnerId) => {
   const [category, group, person] = await Promise.all([
-    categoryId ? Category.findById(categoryId) : null,
-    groupId ? Group.findById(groupId) : null,
-    personId ? Person.findById(personId) : null,
+    categoryId ? Category.findOne({ _id: categoryId, workspaceOwnerId }) : null,
+    groupId ? Group.findOne({ _id: groupId, workspaceOwnerId }) : null,
+    personId ? Person.findOne({ _id: personId, workspaceOwnerId }) : null,
   ]);
 
   if (categoryId && !category) throw new ApiError(400, "Category not found");
@@ -88,10 +88,10 @@ const normalizePayload = (data = {}) => ({
   metadata: data.metadata ?? {},
 });
 
-const prepareRecord = async (data, current = null) => {
+const prepareRecord = async (data, current = null, workspaceOwnerId) => {
   const incoming = normalizePayload(data);
   const recordTypeId = incoming.recordTypeId ?? current?.recordTypeId;
-  const recordType = await getType(recordTypeId);
+  const recordType = await getType(recordTypeId, workspaceOwnerId);
   const customFields = data.customFields === undefined
     ? (current?.customFields instanceof Map ? Object.fromEntries(current.customFields) : current?.customFields || {})
     : incoming.customFields;
@@ -118,7 +118,7 @@ const prepareRecord = async (data, current = null) => {
   }
 
   validateCustomFields(recordType, customFields);
-  await validateReferences(effective);
+  await validateReferences(effective, workspaceOwnerId);
 
   return {
     recordType,
@@ -131,8 +131,8 @@ const prepareRecord = async (data, current = null) => {
   };
 };
 
-const buildFilter = (query = {}) => {
-  const filter = {};
+const buildFilter = (query = {}, workspaceOwnerId) => {
+  const filter = { workspaceOwnerId };
   if (query.recordTypeId) filter.recordTypeId = query.recordTypeId;
   if (query.categoryId) filter.categoryId = query.categoryId;
   if (query.groupId) filter.groupId = query.groupId;
@@ -153,13 +153,13 @@ const populateRecord = (query) =>
     .populate("personId")
     .populate("createdBy", "name email");
 
-export const createRecord = async (data, userId) => {
-  const { data: prepared } = await prepareRecord(data);
-  return Record.create({ ...prepared, createdBy: userId });
+export const createRecord = async (data, userId, workspaceOwnerId) => {
+  const { data: prepared } = await prepareRecord(data, null, workspaceOwnerId);
+  return Record.create({ ...prepared, createdBy: userId, workspaceOwnerId });
 };
 
-export const getRecords = async (query = {}) => {
-  const filter = buildFilter(query);
+export const getRecords = async (query = {}, workspaceOwnerId) => {
+  const filter = buildFilter(query, workspaceOwnerId);
   const page = Math.max(1, parseInt(query.page, 10) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(query.limit, 10) || 25));
   const skip = (page - 1) * limit;
@@ -181,31 +181,31 @@ export const getRecords = async (query = {}) => {
   };
 };
 
-export const updateRecord = async (id, data) => {
-  const current = await Record.findById(id);
+export const updateRecord = async (id, data, workspaceOwnerId) => {
+  const current = await Record.findOne({ _id: id, workspaceOwnerId });
   if (!current) throw new ApiError(404, "Record not found");
-  const { data: prepared } = await prepareRecord(data, current);
-  const record = await Record.findByIdAndUpdate(id, prepared, {
+  const { data: prepared } = await prepareRecord(data, current, workspaceOwnerId);
+  const record = await Record.findOneAndUpdate({ _id: id, workspaceOwnerId }, prepared, {
     new: true,
     runValidators: true,
   });
-  return populateRecord(Record.findById(record._id));
+  return populateRecord(Record.findOne({ _id: record._id, workspaceOwnerId }));
 };
 
-export const deleteRecord = async (id) => {
-  const record = await Record.findById(id);
+export const deleteRecord = async (id, workspaceOwnerId) => {
+  const record = await Record.findOne({ _id: id, workspaceOwnerId });
   if (!record) throw new ApiError(404, "Record not found");
   if (await RecordAssignment.exists({ recordId: id, returnedAt: { $exists: false } })) {
     throw new ApiError(409, "Cannot delete a record with an active assignment");
   }
-  await Record.findByIdAndDelete(id);
+  await Record.deleteOne({ _id: id, workspaceOwnerId });
   return record;
 };
 
 const csvEscape = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
 
-export const exportRecordsCsv = async (query = {}) => {
-  const records = await populateRecord(Record.find(buildFilter(query)).sort({ createdAt: -1 }));
+export const exportRecordsCsv = async (query = {}, workspaceOwnerId) => {
+  const records = await populateRecord(Record.find(buildFilter(query, workspaceOwnerId)).sort({ createdAt: -1 }));
   const header = ["Name", "Reference", "Type", "Status", "Category", "Group", "Person", "Location", "Acquired At", "Custom Fields"];
   const rows = records.map((record) => [
     record.name,

@@ -9,26 +9,26 @@ import {
 } from "../services/people.service.js";
 
 export const createPerson = asyncHandler(async (req, res) => {
-  const person = await createPersonRecord(req.body);
+  const person = await createPersonRecord(req.body, req.workspaceOwnerId);
   res.status(201).json(new ApiResponse(201, person, "Person created"));
 });
 
 export const getPeople = asyncHandler(async (req, res) => {
-  const people = await getPersonRecords(req.query);
+  const people = await getPersonRecords(req.query, req.workspaceOwnerId);
   res.json(new ApiResponse(200, people, "People fetched"));
 });
 
 export const updatePerson = asyncHandler(async (req, res) => {
-  const person = await updatePersonRecord(req.params.id, req.body);
+  const person = await updatePersonRecord(req.params.id, req.body, req.workspaceOwnerId);
   res.json(new ApiResponse(200, person, "Person updated"));
 });
 
 export const togglePersonStatus = asyncHandler(async (req, res) => {
-  const person = await togglePersonRecordStatus(req.params.id, req.body.isActive);
+  const person = await togglePersonRecordStatus(req.params.id, req.body.isActive, req.workspaceOwnerId);
   res.json(new ApiResponse(200, person, "Person status updated"));
 });
 
 export const deletePerson = asyncHandler(async (req, res) => {
-  await deletePersonRecord(req.params.id);
+  await deletePersonRecord(req.params.id, req.workspaceOwnerId);
   res.json(new ApiResponse(200, null, "Person deleted"));
 });

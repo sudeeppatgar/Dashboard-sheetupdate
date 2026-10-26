@@ -10,6 +10,7 @@ The application gives administrators a single workspace to manage records and th
 - Admin and read-only user roles.
 - CRUD management for records, categories, record types, groups, and people.
 - Admins can optionally create a standard employee login while adding a person by enabling login access and setting a temporary password.
+- Each admin has a private workspace. Categories, records, record types, groups, people, and assignment history are isolated by the admin who owns the workspace. Employee logins created by an admin use that admin's workspace.
 - Configurable record types, lifecycle statuses, and custom fields.
 - Generic records, groups, people, and assignment history APIs.
 - Search by record name or reference.
@@ -124,10 +125,18 @@ npm run dev
 If the database was created by the removed legacy asset model, run the one-time migration before starting the API:
 
 ```bash
-npm run migrate:legacy
+WORKSPACE_OWNER_EMAIL=admin@company.com npm run migrate:legacy
 ```
 
-The migration reads the old MongoDB collections directly and writes generic records, groups, people, and assignment history. Verify the migrated data before archiving or removing the old collections.
+The migration reads the old MongoDB collections directly and writes generic records, groups, people, and assignment history. Set `WORKSPACE_OWNER_EMAIL` to the admin who should own the migrated data. Verify the migrated data before archiving or removing the old collections.
+
+If data was created before private workspaces were introduced, run the ownership migration once:
+
+```bash
+WORKSPACE_OWNER_EMAIL=admin@company.com npm run migrate:workspace
+```
+
+This assigns existing ownerless data to the selected admin workspace and synchronizes the workspace-scoped indexes. Existing shared data cannot be automatically divided between multiple admins because it has no historical owner information.
 
 The API runs on `http://localhost:4000`.
 

@@ -18,6 +18,10 @@ export const createAuthMiddleware = ({ model, jwtSecret }) => {
 
     const user = await authenticateRequest({ token, model, jwtSecret });
     req.user = user;
+    req.workspaceOwnerId = user.role === "admin" ? user._id : user.workspaceOwnerId;
+    if (!req.workspaceOwnerId) {
+      throw new ApiError(403, "Your account is not assigned to a workspace. Contact an administrator.");
+    }
     next();
   });
 

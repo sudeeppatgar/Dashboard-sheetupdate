@@ -37,14 +37,16 @@ const recordSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    workspaceOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: true },
 );
 
 recordSchema.index({ recordTypeId: 1, createdAt: -1 });
 recordSchema.index({ recordTypeId: 1, status: 1 });
-recordSchema.index({ recordTypeId: 1, reference: 1 }, { unique: true, sparse: true });
+recordSchema.index({ workspaceOwnerId: 1, recordTypeId: 1, reference: 1 }, { unique: true, sparse: true });
 recordSchema.index({ groupId: 1 });
 recordSchema.index({ personId: 1 });
+recordSchema.index({ workspaceOwnerId: 1, createdAt: -1 });
 
 export default mongoose.model("Record", recordSchema);

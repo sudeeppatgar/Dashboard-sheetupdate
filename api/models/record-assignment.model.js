@@ -20,6 +20,7 @@ const recordAssignmentSchema = new mongoose.Schema(
     assignedAt: { type: Date, default: Date.now },
     returnedAt: Date,
     returnedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    workspaceOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     notes: { type: String, trim: true },
     returnNotes: { type: String, trim: true },
     metadata: {

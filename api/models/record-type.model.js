@@ -36,7 +36,6 @@ const recordTypeSchema = new mongoose.Schema(
     key: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
       lowercase: true,
       match: /^[a-z0-9]+(?:[-_][a-z0-9]+)*$/,
@@ -55,10 +54,12 @@ const recordTypeSchema = new mongoose.Schema(
       availableStatus: { type: String, default: "available", trim: true },
     },
     isActive: { type: Boolean, default: true },
+    workspaceOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: true },
 );
 
 recordTypeSchema.index({ isActive: 1 });
+recordTypeSchema.index({ workspaceOwnerId: 1, key: 1 }, { unique: true });
 
 export default mongoose.model("RecordType", recordTypeSchema);

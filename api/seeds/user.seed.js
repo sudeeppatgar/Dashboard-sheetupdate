@@ -9,16 +9,23 @@ const seedUser = async () => {
   });
 
   if (exists) {
+    if (!exists.workspaceOwnerId) {
+      exists.workspaceOwnerId = exists._id;
+      await exists.save();
+    }
     console.log("Admin already exists");
     return;
   }
 
-  await User.create({
+  const admin = await User.create({
     name: "Admin",
     email: "admin@company.com",
     password: "admin123",
     role: "admin",
   });
+
+  admin.workspaceOwnerId = admin._id;
+  await admin.save();
 
   console.log("Admin user created");
 };

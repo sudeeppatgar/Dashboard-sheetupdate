@@ -6,9 +6,9 @@ import RecordAssignment from "../models/record-assignment.model.js";
 import User from "../models/user.model.js";
 import { escapeRegex } from "../utils/domain.js";
 
-const validateGroup = async (groupId) => {
+const validateGroup = async (groupId, workspaceOwnerId) => {
   if (!groupId) return;
-  const group = await Group.findById(groupId);
+  const group = await Group.findOne({ _id: groupId, workspaceOwnerId });
   if (!group) throw new ApiError(400, "Group not found");
 };
 
@@ -26,19 +26,19 @@ const requireLoginDetails = (email, password) => {
   }
 };
 
-export const createPerson = async (data) => {
+export const createPerson = async (data, workspaceOwnerId) => {
   const name = String(data.name || "").trim();
   if (!name) throw new ApiError(400, "name is required");
-  await validateGroup(data.groupId);
+  await validateGroup(data.groupId, workspaceOwnerId);
 
-  const { password, loginEnabled, ...personData } = data;
+  const { password, loginEnabled, workspaceOwnerId: ignoredWorkspaceOwnerId, ...personData } = data;
   let user;
 
   try {
     if (loginEnabled === true) {
       const email = String(personData.email || "").trim().toLowerCase();
       requireLoginDetails(email, password);
-      user = await User.create({ name, email, password, role: "user" });
+      user = await User.create({ name, email, password, role: "user", workspaceOwnerId });
       personData.email = email;
     }
 
@@ -47,6 +47,7 @@ export const createPerson = async (data) => {
       name,
       userId: user?._id,
       loginEnabled: Boolean(user),
+      workspaceOwnerId,
     });
   } catch (error) {
     if (user?._id) await User.findByIdAndDelete(user._id);
@@ -54,8 +55,8 @@ export const createPerson = async (data) => {
   }
 };
 
-export const getPeople = async (filters = {}) => {
-  const query = {};
+export const getPeople = async (filters = {}, workspaceOwnerId) => {
+  const query = { workspaceOwnerId };
   if (filters.search) {
     const regex = new RegExp(escapeRegex(filters.search), "i");
     query.$or = [{ name: regex }, { reference: regex }, { email: regex }];
@@ -67,17 +68,17 @@ export const getPeople = async (filters = {}) => {
   return Person.find(query).populate("groupId").sort({ name: 1 });
 };
 
-export const getPersonById = async (id) => {
-  const person = await Person.findById(id).populate("groupId");
+export const getPersonById = async (id, workspaceOwnerId) => {
+  const person = await Person.findOne({ _id: id, workspaceOwnerId }).populate("groupId");
   if (!person) throw new ApiError(404, "Person not found");
   return person;
 };
 
-export const updatePerson = async (id, data) => {
-  const current = await getPersonById(id);
-  await validateGroup(data.groupId);
+export const updatePerson = async (id, data, workspaceOwnerId) => {
+  const current = await getPersonById(id, workspaceOwnerId);
+  await validateGroup(data.groupId, workspaceOwnerId);
 
-  const { password, loginEnabled, ...personData } = data;
+  const { password, loginEnabled, workspaceOwnerId: ignoredWorkspaceOwnerId, ...personData } = data;
   const nextLoginEnabled = loginEnabled === undefined ? Boolean(current.loginEnabled) : Boolean(loginEnabled);
   let user = current.userId ? await User.findById(current.userId) : null;
 
@@ -85,12 +86,12 @@ export const updatePerson = async (id, data) => {
     if (nextLoginEnabled) {
       const email = String(personData.email || current.email || "").trim().toLowerCase();
       if (email) {
-        const duplicatePerson = await Person.exists({ email, _id: { $ne: id } });
+        const duplicatePerson = await Person.exists({ email, workspaceOwnerId, _id: { $ne: id } });
         if (duplicatePerson) throw new ApiError(409, "That email address is already used by another person");
       }
       if (!user) {
         requireLoginDetails(email, password);
-        user = await User.create({ name: personData.name || current.name, email, password, role: "user", isActive: current.isActive });
+        user = await User.create({ name: personData.name || current.name, email, password, role: "user", isActive: current.isActive, workspaceOwnerId });
       } else {
         if (!email) throw new ApiError(400, "Email is required when login access is enabled");
         user.name = String(personData.name || current.name).trim();
@@ -108,9 +109,9 @@ export const updatePerson = async (id, data) => {
       await user.save();
     }
 
-    return await Person.findByIdAndUpdate(
-      id,
-      { ...personData, userId: user?._id, loginEnabled: nextLoginEnabled },
+    return await Person.findOneAndUpdate(
+      { _id: id, workspaceOwnerId },
+      { ...personData, userId: user?._id, loginEnabled: nextLoginEnabled, workspaceOwnerId },
       { new: true, runValidators: true },
     ).populate("groupId");
   } catch (error) {
@@ -118,9 +119,9 @@ export const updatePerson = async (id, data) => {
   }
 };
 
-export const togglePersonStatus = async (id, isActive) => {
-  const person = await Person.findByIdAndUpdate(
-    id,
+export const togglePersonStatus = async (id, isActive, workspaceOwnerId) => {
+  const person = await Person.findOneAndUpdate(
+    { _id: id, workspaceOwnerId },
     { isActive: Boolean(isActive) },
     { new: true, runValidators: true },
   ).populate("groupId");
@@ -129,16 +130,16 @@ export const togglePersonStatus = async (id, isActive) => {
   return person;
 };
 
-export const deletePerson = async (id) => {
-  const person = await getPersonById(id);
+export const deletePerson = async (id, workspaceOwnerId) => {
+  const person = await getPersonById(id, workspaceOwnerId);
   const [recordReference, assignmentHistoryReference] = await Promise.all([
-    Record.exists({ personId: id }),
-    RecordAssignment.exists({ personId: id }),
+    Record.exists({ personId: id, workspaceOwnerId }),
+    RecordAssignment.exists({ personId: id, workspaceOwnerId }),
   ]);
   if (recordReference || assignmentHistoryReference) {
     throw new ApiError(409, "Cannot delete a person linked to one or more records or assignment histories");
   }
-  await Person.findByIdAndDelete(id);
+  await Person.deleteOne({ _id: id, workspaceOwnerId });
   if (person.userId) await User.findByIdAndDelete(person.userId);
   return person;
 };

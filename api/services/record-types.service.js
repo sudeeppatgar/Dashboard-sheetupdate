@@ -61,6 +61,8 @@ const normalizeFields = (fields) => {
 };
 
 const normalizeRecordType = (data = {}) => {
+  const safeData = { ...data };
+  delete safeData.workspaceOwnerId;
   const statuses = normalizeStatuses(data.statuses);
   const fields = normalizeFields(data.fields);
   const assignment = {
@@ -77,25 +79,25 @@ const normalizeRecordType = (data = {}) => {
   }
 
   return {
-    ...data,
-    key: slugify(data.key || data.name),
-    name: String(data.name || "").trim(),
-    pluralName: data.pluralName ? String(data.pluralName).trim() : undefined,
-    description: data.description ? String(data.description).trim() : undefined,
+    ...safeData,
+    key: slugify(safeData.key || safeData.name),
+    name: String(safeData.name || "").trim(),
+    pluralName: safeData.pluralName ? String(safeData.pluralName).trim() : undefined,
+    description: safeData.description ? String(safeData.description).trim() : undefined,
     statuses,
     fields,
     assignment,
   };
 };
 
-export const createRecordType = async (data) => {
+export const createRecordType = async (data, workspaceOwnerId) => {
   const normalized = normalizeRecordType(data);
   if (!normalized.name) throw new ApiError(400, "name is required");
-  return RecordType.create(normalized);
+  return RecordType.create({ ...normalized, workspaceOwnerId });
 };
 
-export const getRecordTypes = async (filters = {}) => {
-  const query = {};
+export const getRecordTypes = async (filters = {}, workspaceOwnerId) => {
+  const query = { workspaceOwnerId };
   if (filters.search) {
     const regex = new RegExp(escapeRegex(filters.search), "i");
     query.$or = [{ name: regex }, { key: regex }];
@@ -106,14 +108,14 @@ export const getRecordTypes = async (filters = {}) => {
   return RecordType.find(query).sort({ name: 1 });
 };
 
-export const getRecordTypeById = async (id) => {
-  const recordType = await RecordType.findById(id);
+export const getRecordTypeById = async (id, workspaceOwnerId) => {
+  const recordType = await RecordType.findOne({ _id: id, workspaceOwnerId });
   if (!recordType) throw new ApiError(404, "Record type not found");
   return recordType;
 };
 
-export const updateRecordType = async (id, data) => {
-  const current = await getRecordTypeById(id);
+export const updateRecordType = async (id, data, workspaceOwnerId) => {
+  const current = await getRecordTypeById(id, workspaceOwnerId);
   const currentData = current.toObject();
   const normalized = normalizeRecordType({
     key: currentData.key,
@@ -126,16 +128,16 @@ export const updateRecordType = async (id, data) => {
     isActive: currentData.isActive,
     ...data,
   });
-  const recordType = await RecordType.findByIdAndUpdate(id, normalized, {
+  const recordType = await RecordType.findOneAndUpdate({ _id: id, workspaceOwnerId }, normalized, {
     new: true,
     runValidators: true,
   });
   return recordType;
 };
 
-export const toggleRecordTypeStatus = async (id, isActive) => {
-  const recordType = await RecordType.findByIdAndUpdate(
-    id,
+export const toggleRecordTypeStatus = async (id, isActive, workspaceOwnerId) => {
+  const recordType = await RecordType.findOneAndUpdate(
+    { _id: id, workspaceOwnerId },
     { isActive: Boolean(isActive) },
     { new: true, runValidators: true },
   );
@@ -143,11 +145,11 @@ export const toggleRecordTypeStatus = async (id, isActive) => {
   return recordType;
 };
 
-export const deleteRecordType = async (id) => {
-  const recordType = await getRecordTypeById(id);
-  if (await Record.exists({ recordTypeId: id })) {
+export const deleteRecordType = async (id, workspaceOwnerId) => {
+  const recordType = await getRecordTypeById(id, workspaceOwnerId);
+  if (await Record.exists({ recordTypeId: id, workspaceOwnerId })) {
     throw new ApiError(409, "Cannot delete a record type that is in use");
   }
-  await RecordType.findByIdAndDelete(id);
+  await RecordType.deleteOne({ _id: id, workspaceOwnerId });
   return recordType;
 };

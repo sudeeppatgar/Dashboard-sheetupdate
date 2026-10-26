@@ -4,30 +4,30 @@ import Record from "../models/record.model.js";
 import RecordAssignment from "../models/record-assignment.model.js";
 import RecordType from "../models/record-type.model.js";
 
-const loadRecordContext = async (recordId) => {
-  const record = await Record.findById(recordId);
+const loadRecordContext = async (recordId, workspaceOwnerId) => {
+  const record = await Record.findOne({ _id: recordId, workspaceOwnerId });
   if (!record) throw new ApiError(404, "Record not found");
-  const recordType = await RecordType.findById(record.recordTypeId);
+  const recordType = await RecordType.findOne({ _id: record.recordTypeId, workspaceOwnerId });
   if (!recordType?.assignment?.enabled) {
     throw new ApiError(400, "Assignments are disabled for this record type");
   }
   return { record, recordType };
 };
 
-export const getHistory = async (recordId) =>
-  RecordAssignment.find({ recordId })
+export const getHistory = async (recordId, workspaceOwnerId) =>
+  RecordAssignment.find({ recordId, workspaceOwnerId })
     .populate("personId")
     .populate("assignedBy", "name email")
     .populate("returnedBy", "name email")
     .sort({ assignedAt: -1 });
 
-export const assignRecord = async (recordId, data, userId) => {
-  const { record, recordType } = await loadRecordContext(recordId);
-  const person = await Person.findById(data.personId);
+export const assignRecord = async (recordId, data, userId, workspaceOwnerId) => {
+  const { record, recordType } = await loadRecordContext(recordId, workspaceOwnerId);
+  const person = await Person.findOne({ _id: data.personId, workspaceOwnerId });
   if (!person) throw new ApiError(404, "Person not found");
   if (!person.isActive) throw new ApiError(400, "Person is inactive");
 
-  const active = await RecordAssignment.findOne({ recordId, returnedAt: { $exists: false } });
+  const active = await RecordAssignment.findOne({ recordId, workspaceOwnerId, returnedAt: { $exists: false } });
   if (active) throw new ApiError(400, "Record is already assigned");
   if (data.assignedAt && Number.isNaN(new Date(data.assignedAt).getTime())) {
     throw new ApiError(400, "assignedAt must be a valid date");
@@ -40,6 +40,7 @@ export const assignRecord = async (recordId, data, userId) => {
     assignedAt: data.assignedAt ? new Date(data.assignedAt) : new Date(),
     notes: data.notes,
     metadata: data.metadata,
+    workspaceOwnerId,
   });
   record.personId = data.personId;
   record.status = recordType.assignment.assignedStatus;
@@ -47,9 +48,9 @@ export const assignRecord = async (recordId, data, userId) => {
   return assignment;
 };
 
-export const returnRecord = async (recordId, data, userId) => {
-  const { record, recordType } = await loadRecordContext(recordId);
-  const assignment = await RecordAssignment.findOne({ recordId, returnedAt: { $exists: false } });
+export const returnRecord = async (recordId, data, userId, workspaceOwnerId) => {
+  const { record, recordType } = await loadRecordContext(recordId, workspaceOwnerId);
+  const assignment = await RecordAssignment.findOne({ recordId, workspaceOwnerId, returnedAt: { $exists: false } });
   if (!assignment) throw new ApiError(400, "Record has no active assignment");
 
   const returnedAt = data.returnedAt ? new Date(data.returnedAt) : new Date();
