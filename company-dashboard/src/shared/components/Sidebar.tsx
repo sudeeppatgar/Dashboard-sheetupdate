@@ -32,7 +32,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         onClick={onToggle}
         className={`fixed inset-0 z-30 bg-slate-950/40 transition-opacity md:hidden ${isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
       />
-      <aside className={`fixed inset-y-0 left-0 z-40 flex min-h-screen shrink-0 flex-col border-r border-slate-200 bg-white p-4 shadow-xl transition-all duration-200 md:static md:shadow-none ${isOpen ? 'w-72 translate-x-0 md:w-64' : '-translate-x-full md:w-20 md:translate-x-0'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 flex h-screen max-h-screen shrink-0 flex-col overflow-hidden border-r border-slate-200 bg-white p-4 shadow-xl transition-all duration-200 md:static md:shadow-none ${isOpen ? 'w-72 translate-x-0 md:w-64' : '-translate-x-full md:w-20 md:translate-x-0'}`}>
         <div className={`flex items-center gap-3 border-b border-slate-100 pb-4 ${isOpen ? 'justify-between' : 'justify-center'}`}>
           {isOpen ? (
             <div className="min-w-0">
