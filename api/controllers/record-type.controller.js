@@ -9,7 +9,7 @@ import {
 } from "../services/record-types.service.js";
 
 export const createRecordType = asyncHandler(async (req, res) => {
-  const recordType = await createRecordTypeRecord(req.body, req.workspaceOwnerId);
+  const recordType = await createRecordTypeRecord(req.body, req.workspaceOwnerId, req.workspaceId);
   res.status(201).json(new ApiResponse(201, recordType, "Record type created"));
 });
 

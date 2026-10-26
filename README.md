@@ -7,6 +7,7 @@ The application gives administrators a single workspace to manage records and th
 ## Current capabilities
 
 - JWT-based login with active-user and password-change checks.
+- Self-service admin registration creates a private workspace and signs the first administrator in automatically.
 - Admin and read-only user roles.
 - CRUD management for records, categories, record types, groups, and people.
 - Admins can optionally create a standard employee login while adding a person by enabling login access and setting a temporary password.
@@ -23,7 +24,7 @@ The application gives administrators a single workspace to manage records and th
 
 ## Domain configuration
 
-The frontend uses neutral defaults and supports domain-specific terminology through Vite environment variables. Set these in `company-dashboard/.env` without changing the UI components:
+The frontend uses neutral defaults and supports domain-specific terminology through Vite environment variables. Set these in `company-dashboard/.env` without changing the UI components. These values are defaults for the frontend build.
 
 ```env
 VITE_APP_NAME=Operations Workspace
@@ -47,6 +48,8 @@ VITE_STATUS_ARCHIVED_LABEL=Archived
 ```
 
 The backend API and database model names are domain-neutral. Configure a domain by creating one or more record types with statuses, assignment behavior, and custom fields.
+
+For independent customer workspaces, use the **Create a workspace** registration page. Workspace registration can set the workspace name and optional record/person labels. After login, workspace configuration overrides the global `VITE_*` defaults for that customer.
 
 ## Project structure
 
@@ -174,7 +177,10 @@ Authorization: Bearer <jwt>
 
 ```http
 POST /api/auth/login
+POST /api/auth/register
 ```
+
+Admin registration accepts a workspace name, admin name, email, password, and optional record/person labels. It creates a separate workspace so organizations can register independently. Employee accounts created later from the People page inherit that workspace.
 
 When `loginEnabled` is `true` on `POST /api/people`, the API creates a standard `user` login using the person's email and password. The password is hashed in the `User` model and is never stored on or returned with the `Person` record. On an update, leave the password blank to keep the existing password.
 

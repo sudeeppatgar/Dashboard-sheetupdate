@@ -2,7 +2,7 @@ import { ApiError } from "../utils/ApiError.js";
 import Category from "../models/category.model.js";
 import Record from "../models/record.model.js";
 
-export const createCategory = (data, workspaceOwnerId) => Category.create({ name: data.name, workspaceOwnerId });
+export const createCategory = (data, workspaceOwnerId, workspaceId) => Category.create({ name: data.name, workspaceOwnerId, workspaceId });
 
 export const getCategories = (workspaceOwnerId) => Category.find({ workspaceOwnerId }).sort({ createdAt: -1 });
 

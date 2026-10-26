@@ -2,18 +2,16 @@ import { NavLink } from 'react-router-dom'
 import { useApp } from '../context/useApp'
 import { domainConfig } from '../config/domain'
 
-const adminNavItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: '⌂', end: false },
-  { to: '/records', label: domainConfig.recordPlural, icon: '▦', end: false },
-  { to: '/categories', label: domainConfig.categoryPlural, icon: '◈', end: false },
-  { to: '/record-types', label: domainConfig.typePlural, icon: '⚙', end: false },
-  { to: '/groups', label: domainConfig.groupPlural, icon: '◫', end: false },
-  { to: '/people', label: domainConfig.personPlural, icon: '●', end: false },
-]
-
-const userNavItems = [
-  { to: '/records', label: domainConfig.recordPlural, icon: '▦', end: true },
-]
+const getNavItems = (isAdmin: boolean) => isAdmin
+  ? [
+      { to: '/dashboard', label: 'Dashboard', icon: '⌂', end: false },
+      { to: '/records', label: domainConfig.recordPlural, icon: '▦', end: false },
+      { to: '/categories', label: domainConfig.categoryPlural, icon: '◈', end: false },
+      { to: '/record-types', label: domainConfig.typePlural, icon: '⚙', end: false },
+      { to: '/groups', label: domainConfig.groupPlural, icon: '◫', end: false },
+      { to: '/people', label: domainConfig.personPlural, icon: '●', end: false },
+    ]
+  : [{ to: '/records', label: domainConfig.recordPlural, icon: '▦', end: true }]
 
 type SidebarProps = {
   isOpen: boolean
@@ -22,7 +20,7 @@ type SidebarProps = {
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const { user, signOut } = useApp()
-  const navItems = user?.role === 'admin' ? adminNavItems : userNavItems
+  const navItems = getNavItems(user?.role === 'admin')
 
   return (
     <>

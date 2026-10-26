@@ -6,6 +6,7 @@ import Group from "../models/group.model.js";
 import Person from "../models/person.model.js";
 import RecordAssignment from "../models/record-assignment.model.js";
 import User from "../models/user.model.js";
+import Workspace from "../models/workspace.model.js";
 import { slugify } from "../utils/domain.js";
 
 const LEGACY_STATUS_KEYS = ["available", "assigned", "maintenance", "retired"];
@@ -15,7 +16,7 @@ const readCollection = async (name) => {
   return collection.find({}).toArray();
 };
 
-const migrateGroups = async (departments, workspaceOwnerId) => {
+const migrateGroups = async (departments, workspaceOwnerId, workspaceId) => {
   const groupIds = new Map();
   for (const department of departments) {
     const key = slugify(department.code || department.name || String(department._id));
@@ -27,6 +28,7 @@ const migrateGroups = async (departments, workspaceOwnerId) => {
         description: department.description,
         isActive: department.isActive !== false,
         workspaceOwnerId,
+        workspaceId,
       },
       { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
     );
@@ -35,7 +37,7 @@ const migrateGroups = async (departments, workspaceOwnerId) => {
   return groupIds;
 };
 
-const migratePeople = async (employees, groupIds, workspaceOwnerId) => {
+const migratePeople = async (employees, groupIds, workspaceOwnerId, workspaceId) => {
   const personIds = new Map();
   for (const employee of employees) {
     const reference = employee.employeeNumber || `legacy-${employee._id}`;
@@ -51,6 +53,7 @@ const migratePeople = async (employees, groupIds, workspaceOwnerId) => {
         location: employee.location,
         isActive: employee.isActive !== false,
         workspaceOwnerId,
+        workspaceId,
       },
       { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
     );
@@ -59,7 +62,7 @@ const migratePeople = async (employees, groupIds, workspaceOwnerId) => {
   return personIds;
 };
 
-const getLegacyRecordType = async (workspaceOwnerId) =>
+const getLegacyRecordType = async (workspaceOwnerId, workspaceId) =>
   RecordType.findOneAndUpdate(
     { key: "legacy-equipment", workspaceOwnerId },
     {
@@ -77,11 +80,12 @@ const getLegacyRecordType = async (workspaceOwnerId) =>
       ],
       isActive: true,
       workspaceOwnerId,
+      workspaceId,
     },
     { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
   );
 
-const migrateRecords = async (assets, employees, personIds, groupIds, recordType, workspaceOwnerId) => {
+const migrateRecords = async (assets, employees, personIds, groupIds, recordType, workspaceOwnerId, workspaceId) => {
   const recordIds = new Map();
   const employeeById = new Map(employees.map((employee) => [String(employee._id), employee]));
   const makeModels = await readCollection("makemodels");
@@ -102,6 +106,7 @@ const migrateRecords = async (assets, employees, personIds, groupIds, recordType
         recordTypeId: recordType._id,
         reference,
         workspaceOwnerId,
+        workspaceId,
         "metadata.legacyAssetId": { $ne: String(asset._id) },
       });
       if (duplicate) reference = `${reference}-${String(asset._id).slice(-6)}`;
@@ -130,7 +135,7 @@ const migrateRecords = async (assets, employees, personIds, groupIds, recordType
   return recordIds;
 };
 
-const migrateAssignments = async (assignments, recordIds, personIds, workspaceOwnerId) => {
+const migrateAssignments = async (assignments, recordIds, personIds, workspaceOwnerId, workspaceId) => {
   for (const assignment of assignments) {
     const recordId = recordIds.get(String(assignment.assetId));
     const personId = personIds.get(String(assignment.employeeId));
@@ -148,6 +153,7 @@ const migrateAssignments = async (assignments, recordIds, personIds, workspaceOw
         returnNotes: assignment.returnNotes,
         metadata: { legacyAssignmentId: String(assignment._id) },
         workspaceOwnerId,
+        workspaceId,
       },
       { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
     );
@@ -161,6 +167,9 @@ const run = async () => {
   const owner = await User.findOne({ email: ownerEmail, role: "admin" });
   if (!owner) throw new Error(`Admin user not found for ${ownerEmail}`);
   owner.workspaceOwnerId = owner._id;
+  const workspace = owner.workspaceId ? await Workspace.findById(owner.workspaceId) : await Workspace.findOne({ ownerId: owner._id });
+  if (!workspace) throw new Error("Workspace not found for legacy migration owner; run migrate:workspace first");
+  owner.workspaceId = workspace._id;
   await owner.save();
   const [departments, employees, assets, assignments] = await Promise.all([
     readCollection("departments"),
@@ -168,11 +177,11 @@ const run = async () => {
     readCollection("assets"),
     readCollection("assetassignments"),
   ]);
-  const groupIds = await migrateGroups(departments, owner._id);
-  const personIds = await migratePeople(employees, groupIds, owner._id);
-  const recordType = await getLegacyRecordType(owner._id);
-  const recordIds = await migrateRecords(assets, employees, personIds, groupIds, recordType, owner._id);
-  await migrateAssignments(assignments, recordIds, personIds, owner._id);
+  const groupIds = await migrateGroups(departments, owner._id, workspace._id);
+  const personIds = await migratePeople(employees, groupIds, owner._id, workspace._id);
+  const recordType = await getLegacyRecordType(owner._id, workspace._id);
+  const recordIds = await migrateRecords(assets, employees, personIds, groupIds, recordType, owner._id, workspace._id);
+  await migrateAssignments(assignments, recordIds, personIds, owner._id, workspace._id);
   console.log(`Migrated ${departments.length} groups, ${employees.length} people, ${assets.length} records, and ${assignments.length} assignments.`);
   await mongoose.disconnect();
 };

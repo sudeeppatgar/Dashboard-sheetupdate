@@ -153,9 +153,9 @@ const populateRecord = (query) =>
     .populate("personId")
     .populate("createdBy", "name email");
 
-export const createRecord = async (data, userId, workspaceOwnerId) => {
+export const createRecord = async (data, userId, workspaceOwnerId, workspaceId) => {
   const { data: prepared } = await prepareRecord(data, null, workspaceOwnerId);
-  return Record.create({ ...prepared, createdBy: userId, workspaceOwnerId });
+  return Record.create({ ...prepared, createdBy: userId, workspaceOwnerId, workspaceId });
 };
 
 export const getRecords = async (query = {}, workspaceOwnerId) => {

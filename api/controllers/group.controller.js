@@ -9,7 +9,7 @@ import {
 } from "../services/groups.service.js";
 
 export const createGroup = asyncHandler(async (req, res) => {
-  const group = await createGroupRecord(req.body, req.workspaceOwnerId);
+  const group = await createGroupRecord(req.body, req.workspaceOwnerId, req.workspaceId);
   res.status(201).json(new ApiResponse(201, group, "Group created"));
 });
 

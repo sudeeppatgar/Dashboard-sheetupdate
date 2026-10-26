@@ -26,7 +26,7 @@ const requireLoginDetails = (email, password) => {
   }
 };
 
-export const createPerson = async (data, workspaceOwnerId) => {
+export const createPerson = async (data, workspaceOwnerId, workspaceId) => {
   const name = String(data.name || "").trim();
   if (!name) throw new ApiError(400, "name is required");
   await validateGroup(data.groupId, workspaceOwnerId);
@@ -38,7 +38,7 @@ export const createPerson = async (data, workspaceOwnerId) => {
     if (loginEnabled === true) {
       const email = String(personData.email || "").trim().toLowerCase();
       requireLoginDetails(email, password);
-      user = await User.create({ name, email, password, role: "user", workspaceOwnerId });
+      user = await User.create({ name, email, password, role: "user", workspaceOwnerId, workspaceId });
       personData.email = email;
     }
 
@@ -48,6 +48,7 @@ export const createPerson = async (data, workspaceOwnerId) => {
       userId: user?._id,
       loginEnabled: Boolean(user),
       workspaceOwnerId,
+      workspaceId,
     });
   } catch (error) {
     if (user?._id) await User.findByIdAndDelete(user._id);
@@ -74,7 +75,7 @@ export const getPersonById = async (id, workspaceOwnerId) => {
   return person;
 };
 
-export const updatePerson = async (id, data, workspaceOwnerId) => {
+export const updatePerson = async (id, data, workspaceOwnerId, workspaceId) => {
   const current = await getPersonById(id, workspaceOwnerId);
   await validateGroup(data.groupId, workspaceOwnerId);
 
@@ -91,7 +92,7 @@ export const updatePerson = async (id, data, workspaceOwnerId) => {
       }
       if (!user) {
         requireLoginDetails(email, password);
-        user = await User.create({ name: personData.name || current.name, email, password, role: "user", isActive: current.isActive, workspaceOwnerId });
+        user = await User.create({ name: personData.name || current.name, email, password, role: "user", isActive: current.isActive, workspaceOwnerId, workspaceId });
       } else {
         if (!email) throw new ApiError(400, "Email is required when login access is enabled");
         user.name = String(personData.name || current.name).trim();
@@ -111,7 +112,7 @@ export const updatePerson = async (id, data, workspaceOwnerId) => {
 
     return await Person.findOneAndUpdate(
       { _id: id, workspaceOwnerId },
-      { ...personData, userId: user?._id, loginEnabled: nextLoginEnabled, workspaceOwnerId },
+      { ...personData, userId: user?._id, loginEnabled: nextLoginEnabled, workspaceOwnerId, workspaceId },
       { new: true, runValidators: true },
     ).populate("groupId");
   } catch (error) {

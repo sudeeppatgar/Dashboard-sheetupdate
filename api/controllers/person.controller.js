@@ -9,7 +9,7 @@ import {
 } from "../services/people.service.js";
 
 export const createPerson = asyncHandler(async (req, res) => {
-  const person = await createPersonRecord(req.body, req.workspaceOwnerId);
+  const person = await createPersonRecord(req.body, req.workspaceOwnerId, req.workspaceId);
   res.status(201).json(new ApiResponse(201, person, "Person created"));
 });
 
@@ -19,7 +19,7 @@ export const getPeople = asyncHandler(async (req, res) => {
 });
 
 export const updatePerson = asyncHandler(async (req, res) => {
-  const person = await updatePersonRecord(req.params.id, req.body, req.workspaceOwnerId);
+  const person = await updatePersonRecord(req.params.id, req.body, req.workspaceOwnerId, req.workspaceId);
   res.json(new ApiResponse(200, person, "Person updated"));
 });
 

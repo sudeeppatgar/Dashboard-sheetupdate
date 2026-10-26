@@ -6,10 +6,10 @@ import { escapeRegex, slugify } from "../utils/domain.js";
 
 const buildGroupKey = (data) => slugify(data.key || data.name);
 
-export const createGroup = async (data, workspaceOwnerId) => {
+export const createGroup = async (data, workspaceOwnerId, workspaceId) => {
   const name = String(data.name || "").trim();
   if (!name) throw new ApiError(400, "name is required");
-  return Group.create({ name, key: buildGroupKey(data), description: data.description, workspaceOwnerId });
+  return Group.create({ name, key: buildGroupKey(data), description: data.description, workspaceOwnerId, workspaceId });
 };
 
 export const getGroups = async (filters = {}, workspaceOwnerId) => {

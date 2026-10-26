@@ -90,10 +90,10 @@ const normalizeRecordType = (data = {}) => {
   };
 };
 
-export const createRecordType = async (data, workspaceOwnerId) => {
+export const createRecordType = async (data, workspaceOwnerId, workspaceId) => {
   const normalized = normalizeRecordType(data);
   if (!normalized.name) throw new ApiError(400, "name is required");
-  return RecordType.create({ ...normalized, workspaceOwnerId });
+  return RecordType.create({ ...normalized, workspaceOwnerId, workspaceId });
 };
 
 export const getRecordTypes = async (filters = {}, workspaceOwnerId) => {

@@ -4,6 +4,7 @@ import { AppProvider } from './shared/context/AppProvider'
 import { useApp } from './shared/context/useApp'
 import { Sidebar } from './shared/components/Sidebar'
 import LoginPage from './modules/auth/components/LoginPage'
+import RegisterPage from './modules/auth/components/RegisterPage'
 import DashboardPage from './modules/dashboard/components/DashboardPage'
 import CategoriesPage from './modules/catalog/components/CategoriesPage'
 import RecordTypesPage from './modules/record-types/components/RecordTypesPage'
@@ -17,7 +18,12 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   if (!isAuthenticated) {
-    return <LoginPage />
+    return (
+      <Routes>
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="*" element={<LoginPage />} />
+      </Routes>
+    )
   }
 
   const isAdmin = user?.role === 'admin'

@@ -8,16 +8,17 @@ import RecordType from "../models/record-type.model.js";
 import Person from "../models/person.model.js";
 import Record from "../models/record.model.js";
 import RecordAssignment from "../models/record-assignment.model.js";
+import Workspace from "../models/workspace.model.js";
 
 const getOwnerEmail = () => {
   const argument = process.argv.find((value) => value.startsWith("--email="));
   return (argument ? argument.slice("--email=".length) : process.env.WORKSPACE_OWNER_EMAIL)?.trim().toLowerCase();
 };
 
-const setMissingOwner = async (model, workspaceOwnerId) => {
+const setMissingOwner = async (model, workspaceOwnerId, workspaceId) => {
   const result = await model.updateMany(
     { $or: [{ workspaceOwnerId: { $exists: false } }, { workspaceOwnerId: null }] },
-    { $set: { workspaceOwnerId } },
+    { $set: { workspaceOwnerId, workspaceId } },
   );
   return result.modifiedCount;
 };
@@ -33,12 +34,22 @@ const run = async () => {
   if (!owner) throw new Error(`Admin user not found for ${ownerEmail}`);
 
   owner.workspaceOwnerId = owner._id;
+  let workspace = owner.workspaceId ? await Workspace.findById(owner.workspaceId) : await Workspace.findOne({ ownerId: owner._id });
+  if (!workspace) {
+    workspace = await Workspace.create({
+      name: `${owner.name}'s Workspace`,
+      slug: `${owner.name}-${owner._id}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""),
+      ownerId: owner._id,
+      config: { appName: `${owner.name}'s Workspace` },
+    });
+  }
+  owner.workspaceId = workspace._id;
   await owner.save();
 
   const counts = {};
   const legacyUsers = await User.updateMany(
     { role: "user", $or: [{ workspaceOwnerId: { $exists: false } }, { workspaceOwnerId: null }] },
-    { $set: { workspaceOwnerId: owner._id } },
+    { $set: { workspaceOwnerId: owner._id, workspaceId: workspace._id } },
   );
   counts.users = legacyUsers.modifiedCount;
   for (const [name, model] of [
@@ -49,18 +60,18 @@ const run = async () => {
     ["records", Record],
     ["assignments", RecordAssignment],
   ]) {
-    counts[name] = await setMissingOwner(model, owner._id);
+    counts[name] = await setMissingOwner(model, owner._id, workspace._id);
   }
 
   const linkedUsers = await Person.find({ workspaceOwnerId: owner._id, userId: { $exists: true, $ne: null } }).select("userId");
   if (linkedUsers.length > 0) {
     await User.updateMany(
       { _id: { $in: linkedUsers.map((person) => person.userId) } },
-      { $set: { workspaceOwnerId: owner._id } },
+      { $set: { workspaceOwnerId: owner._id, workspaceId: workspace._id } },
     );
   }
 
-  for (const model of [Category, Group, RecordType, Person, Record, RecordAssignment, User]) {
+  for (const model of [Category, Group, RecordType, Person, Record, RecordAssignment, User, Workspace]) {
     await model.syncIndexes();
   }
 

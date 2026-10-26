@@ -38,6 +38,7 @@ const recordSchema = new mongoose.Schema(
       ref: "User",
     },
     workspaceOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    workspaceId: { type: mongoose.Schema.Types.ObjectId, ref: "Workspace" },
   },
   { timestamps: true },
 );

@@ -12,6 +12,7 @@ const run = async () => {
   const admin = await User.findOne({ email: "admin@company.com", role: "admin" });
   if (!admin) throw new Error("Run npm run seed before npm run seed:demo");
   const workspaceOwnerId = admin._id;
+  const workspaceId = admin.workspaceId;
 
   const recordType = await RecordType.findOneAndUpdate(
     { key: "equipment", workspaceOwnerId },
@@ -34,15 +35,16 @@ const run = async () => {
       ],
       isActive: true,
       workspaceOwnerId,
+      workspaceId,
     },
     { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
   );
 
   const groups = await Group.insertMany(
     [
-      { name: "Engineering", key: "engineering", isActive: true, workspaceOwnerId },
-      { name: "Operations", key: "operations", isActive: true, workspaceOwnerId },
-      { name: "Finance", key: "finance", isActive: true, workspaceOwnerId },
+      { name: "Engineering", key: "engineering", isActive: true, workspaceOwnerId, workspaceId },
+      { name: "Operations", key: "operations", isActive: true, workspaceOwnerId, workspaceId },
+      { name: "Finance", key: "finance", isActive: true, workspaceOwnerId, workspaceId },
     ],
     { ordered: false },
   ).catch(() => []);
@@ -50,11 +52,11 @@ const run = async () => {
 
   await Person.insertMany(
     [
-      { name: "Demo Person", reference: "DEMO-001", email: "demo.person@example.com", groupId: engineering?._id, isActive: true, workspaceOwnerId },
+      { name: "Demo Person", reference: "DEMO-001", email: "demo.person@example.com", groupId: engineering?._id, isActive: true, workspaceOwnerId, workspaceId },
     ],
     { ordered: false },
   ).catch(() => []);
-  await Category.insertMany([{ name: "General", workspaceOwnerId }], { ordered: false }).catch(() => []);
+  await Category.insertMany([{ name: "General", workspaceOwnerId, workspaceId }], { ordered: false }).catch(() => []);
 
   console.log(`Generic demo seed complete using ${config.dbUri ? "configured" : "missing"} MongoDB URI (${recordType.name})`);
   await mongoose.disconnect();

@@ -8,6 +8,7 @@ const personSchema = new mongoose.Schema(
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     loginEnabled: { type: Boolean, default: false },
     workspaceOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    workspaceId: { type: mongoose.Schema.Types.ObjectId, ref: "Workspace" },
     groupId: { type: mongoose.Schema.Types.ObjectId, ref: "Group" },
     title: { type: String, trim: true },
     phone: { type: String, trim: true },

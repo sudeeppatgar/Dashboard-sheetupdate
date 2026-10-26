@@ -55,6 +55,7 @@ const recordTypeSchema = new mongoose.Schema(
     },
     isActive: { type: Boolean, default: true },
     workspaceOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    workspaceId: { type: mongoose.Schema.Types.ObjectId, ref: "Workspace" },
   },
   { timestamps: true },
 );

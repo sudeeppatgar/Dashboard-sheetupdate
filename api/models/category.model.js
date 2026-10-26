@@ -8,6 +8,7 @@ const categorySchema = new mongoose.Schema(
       trim: true,
     },
     workspaceOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    workspaceId: { type: mongoose.Schema.Types.ObjectId, ref: "Workspace" },
   },
   { timestamps: true }
 );

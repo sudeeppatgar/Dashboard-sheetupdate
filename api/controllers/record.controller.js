@@ -46,7 +46,7 @@ export const getRecordHistory = asyncHandler(async (req, res) => {
 });
 
 export const assignRecordHandler = asyncHandler(async (req, res) => {
-  const assignment = await assignRecord(req.params.id, req.body, req.user._id, req.workspaceOwnerId);
+  const assignment = await assignRecord(req.params.id, req.body, req.user._id, req.workspaceOwnerId, req.workspaceId);
   res.status(201).json(new ApiResponse(201, assignment, "Record assigned"));
 });
 

@@ -3,6 +3,49 @@ import { ApiError } from "../utils/ApiError.js";
 import { comparePassword } from "../utils/password.js";
 import { generateToken } from "../utils/generateToken.js";
 import User from "../models/user.model.js";
+import Workspace from "../models/workspace.model.js";
+import { slugify } from "../utils/domain.js";
+
+const defaultWorkspaceConfig = {
+  appTagline: "Manage the records and resources that matter to your organization.",
+  recordSingular: "Record",
+  recordPlural: "Records",
+  categorySingular: "Category",
+  categoryPlural: "Categories",
+  typeSingular: "Record type",
+  typePlural: "Record types",
+  groupSingular: "Group",
+  groupPlural: "Groups",
+  personSingular: "Person",
+  personPlural: "People",
+  identifierLabel: "Reference",
+  acquisitionDateLabel: "Acquisition date",
+  statusLabels: {
+    active: "Active",
+    "in-progress": "In progress",
+    completed: "Completed",
+    archived: "Archived",
+  },
+};
+
+const getWorkspaceForUser = async (user) => {
+  if (user.workspaceId) return Workspace.findById(user.workspaceId);
+  if (user.workspaceOwnerId) return Workspace.findOne({ ownerId: user.workspaceOwnerId });
+  if (user.role === "admin") return Workspace.findOne({ ownerId: user._id });
+  return null;
+};
+
+const serializeWorkspace = (workspace) => {
+  if (!workspace) return null;
+  return workspace.toObject({ flattenMaps: true });
+};
+
+const serializeAuthData = async (user) => {
+  const workspace = await getWorkspaceForUser(user);
+  const userData = user.toObject();
+  delete userData.password;
+  return { user: userData, workspace: serializeWorkspace(workspace) };
+};
 
 export const login = async (email, password) => {
   const user = await User.findOne({ email: email.toLowerCase().trim() });
@@ -22,10 +65,58 @@ export const login = async (email, password) => {
   }
 
   const token = generateToken(user._id);
-  const userData = user.toObject();
-  delete userData.password;
+  return { ...(await serializeAuthData(user)), token };
+};
 
-  return { user: userData, token };
+export const registerAdmin = async ({ workspaceName, name, email, password, recordLabel, recordLabelPlural, personLabel, personLabelPlural }) => {
+  const normalizedEmail = email.toLowerCase().trim();
+  const normalizedWorkspaceName = String(workspaceName || "").trim();
+  const slug = slugify(normalizedWorkspaceName);
+
+  if (!slug) throw new ApiError(400, "Workspace name is required");
+  if (await User.exists({ email: normalizedEmail })) {
+    throw new ApiError(409, "An account with that email already exists");
+  }
+  if (await Workspace.exists({ slug })) {
+    throw new ApiError(409, "That workspace name is already registered");
+  }
+
+  const admin = new User({
+    name: String(name).trim(),
+    email: normalizedEmail,
+    password,
+    role: "admin",
+  });
+  admin.workspaceOwnerId = admin._id;
+  let workspace;
+
+  try {
+    await admin.save();
+    workspace = await Workspace.create({
+      name: normalizedWorkspaceName,
+      slug,
+      ownerId: admin._id,
+      config: {
+        ...defaultWorkspaceConfig,
+        appName: normalizedWorkspaceName,
+        ...(recordLabel ? { recordSingular: recordLabel.trim() } : {}),
+        ...(recordLabelPlural ? { recordPlural: recordLabelPlural.trim() } : {}),
+        ...(personLabel ? { personSingular: personLabel.trim() } : {}),
+        ...(personLabelPlural ? { personPlural: personLabelPlural.trim() } : {}),
+      },
+    });
+    admin.workspaceId = workspace._id;
+    await admin.save();
+    const token = generateToken(admin._id);
+    return { ...(await serializeAuthData(admin)), token };
+  } catch (error) {
+    if (workspace?._id) await Workspace.findByIdAndDelete(workspace._id);
+    await User.findByIdAndDelete(admin._id);
+    if (error?.code === 11000) {
+      throw new ApiError(409, "That workspace or email is already registered");
+    }
+    throw error;
+  }
 };
 
 export const authenticateRequest = async ({ token, model, jwtSecret }) => {

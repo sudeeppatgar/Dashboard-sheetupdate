@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useApp } from '../../../shared/context/useApp'
 import Notice from '../../../shared/components/Notice'
 import Button from '../../../shared/components/Button'
@@ -115,6 +115,7 @@ function LoginPage() {
               {submitting ? 'Signing in...' : 'Sign in to dashboard'}
             </Button>
           </form>
+          <p className="mt-5 text-center text-sm text-slate-500">New organization? <Link to="/register" className="font-semibold text-cyan-700 hover:text-cyan-800">Create a workspace</Link></p>
         </section>
       </div>
     </main>

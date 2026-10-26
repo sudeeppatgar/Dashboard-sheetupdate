@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import User from "../models/user.model.js";
 import { config } from "../config/index.js";
 import { authenticateRequest } from "../services/auth.service.js";
+import Workspace from "../models/workspace.model.js";
 
 export const createAuthMiddleware = ({ model, jwtSecret }) => {
   const protect = asyncHandler(async (req, res, next) => {
@@ -19,6 +20,7 @@ export const createAuthMiddleware = ({ model, jwtSecret }) => {
     const user = await authenticateRequest({ token, model, jwtSecret });
     req.user = user;
     req.workspaceOwnerId = user.role === "admin" ? user._id : user.workspaceOwnerId;
+    req.workspaceId = user.workspaceId || (req.workspaceOwnerId ? (await Workspace.findOne({ ownerId: req.workspaceOwnerId }))?._id : undefined);
     if (!req.workspaceOwnerId) {
       throw new ApiError(403, "Your account is not assigned to a workspace. Contact an administrator.");
     }
