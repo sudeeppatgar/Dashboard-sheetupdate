@@ -45,8 +45,4 @@ export const registerAdminValidator = {
     type: "string",
     validate: (value, source) => (value === source.password ? true : "Passwords do not match"),
   },
-  recordLabel: { required: false, type: "string", minLength: 2, transform: trimValue },
-  recordLabelPlural: { required: false, type: "string", minLength: 2, transform: trimValue },
-  personLabel: { required: false, type: "string", minLength: 2, transform: trimValue },
-  personLabelPlural: { required: false, type: "string", minLength: 2, transform: trimValue },
 };

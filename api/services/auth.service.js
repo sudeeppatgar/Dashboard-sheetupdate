@@ -68,7 +68,7 @@ export const login = async (email, password) => {
   return { ...(await serializeAuthData(user)), token };
 };
 
-export const registerAdmin = async ({ workspaceName, name, email, password, recordLabel, recordLabelPlural, personLabel, personLabelPlural }) => {
+export const registerAdmin = async ({ workspaceName, name, email, password }) => {
   const normalizedEmail = email.toLowerCase().trim();
   const normalizedWorkspaceName = String(workspaceName || "").trim();
   const slug = slugify(normalizedWorkspaceName);
@@ -99,10 +99,6 @@ export const registerAdmin = async ({ workspaceName, name, email, password, reco
       config: {
         ...defaultWorkspaceConfig,
         appName: normalizedWorkspaceName,
-        ...(recordLabel ? { recordSingular: recordLabel.trim() } : {}),
-        ...(recordLabelPlural ? { recordPlural: recordLabelPlural.trim() } : {}),
-        ...(personLabel ? { personSingular: personLabel.trim() } : {}),
-        ...(personLabelPlural ? { personPlural: personLabelPlural.trim() } : {}),
       },
     });
     admin.workspaceId = workspace._id;

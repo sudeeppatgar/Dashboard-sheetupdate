@@ -54,8 +54,4 @@ export type RegisterAdminPayload = {
   email: string
   password: string
   confirmPassword: string
-  recordLabel?: string
-  recordLabelPlural?: string
-  personLabel?: string
-  personLabelPlural?: string
 }

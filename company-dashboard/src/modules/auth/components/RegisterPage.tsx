@@ -12,10 +12,6 @@ const initialForm: RegisterAdminPayload = {
   email: '',
   password: '',
   confirmPassword: '',
-  recordLabel: '',
-  recordLabelPlural: '',
-  personLabel: '',
-  personLabelPlural: '',
 }
 
 const inputClass = 'w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-100'
@@ -38,13 +34,7 @@ export default function RegisterPage() {
     setSubmitting(true)
     setNotice(null)
     try {
-      const name = await signUp({
-        ...form,
-        recordLabel: form.recordLabel?.trim() || undefined,
-        recordLabelPlural: form.recordLabelPlural?.trim() || undefined,
-        personLabel: form.personLabel?.trim() || undefined,
-        personLabelPlural: form.personLabelPlural?.trim() || undefined,
-      })
+      const name = await signUp(form)
       setNotice({ type: 'success', message: `Welcome, ${name}. Your workspace is ready.` })
       navigate('/dashboard', { replace: true })
     } catch (error) {
@@ -66,7 +56,7 @@ export default function RegisterPage() {
               <p className="mt-4 text-sm leading-6 text-slate-300 sm:text-base">Register independently, invite employees later, and keep your categories, records, groups, people, and record types separate from every other organization.</p>
             </div>
             <div className="space-y-3 text-sm text-slate-300">
-              {['Your workspace is created with you as the administrator.', 'Employees you add will use your workspace automatically.', 'You can customize the words your team uses for records and people.'].map((item) => <div key={item} className="flex gap-3 rounded-2xl border border-white/10 bg-slate-900/50 p-4"><span className="text-cyan-300">✓</span><span>{item}</span></div>)}
+              {['Your workspace is created with you as the administrator.', 'Employees you add will use your workspace automatically.', 'Your workspace uses the labels configured in the application environment.'].map((item) => <div key={item} className="flex gap-3 rounded-2xl border border-white/10 bg-slate-900/50 p-4"><span className="text-cyan-300">✓</span><span>{item}</span></div>)}
             </div>
           </div>
         </section>
@@ -86,17 +76,6 @@ export default function RegisterPage() {
               <label className="block"><span className="mb-1.5 block text-sm font-medium text-slate-800">Email <span className="text-rose-500">*</span></span><input type="email" value={form.email} onChange={(event) => update('email', event.target.value)} placeholder="alex@example.com" className={inputClass} required /></label>
               <label className="block"><span className="mb-1.5 block text-sm font-medium text-slate-800">Password <span className="text-rose-500">*</span></span><input type="password" value={form.password} onChange={(event) => update('password', event.target.value)} placeholder="At least 8 characters" minLength={8} className={inputClass} required /></label>
               <label className="block"><span className="mb-1.5 block text-sm font-medium text-slate-800">Confirm password <span className="text-rose-500">*</span></span><input type="password" value={form.confirmPassword} onChange={(event) => update('confirmPassword', event.target.value)} placeholder="Repeat your password" minLength={8} className={inputClass} required /></label>
-            </div>
-
-            <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-4">
-              <p className="text-sm font-semibold text-cyan-950">Optional workspace language</p>
-              <p className="mt-1 text-xs leading-5 text-cyan-800">Use the terms your organization already understands. You can leave these blank to use the default labels.</p>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <label className="block"><span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-cyan-900">One record</span><input value={form.recordLabel} onChange={(event) => update('recordLabel', event.target.value)} placeholder="Equipment" className={inputClass} /></label>
-                <label className="block"><span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-cyan-900">Many records</span><input value={form.recordLabelPlural} onChange={(event) => update('recordLabelPlural', event.target.value)} placeholder="Equipment" className={inputClass} /></label>
-                <label className="block"><span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-cyan-900">One person</span><input value={form.personLabel} onChange={(event) => update('personLabel', event.target.value)} placeholder="Employee" className={inputClass} /></label>
-                <label className="block"><span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-cyan-900">Many people</span><input value={form.personLabelPlural} onChange={(event) => update('personLabelPlural', event.target.value)} placeholder="Employees" className={inputClass} /></label>
-              </div>
             </div>
 
             <Button type="submit" variant="primary" disabled={submitting} className="w-full">{submitting ? 'Creating workspace…' : 'Create workspace'}</Button>

@@ -44,8 +44,8 @@ export const domainConfig: DomainConfig = {
   statusLabels: { ...envDomainConfig.statusLabels },
 }
 
-export const setDomainConfig = (overrides?: Partial<DomainConfig>) => {
+export const setDomainConfig = (overrides?: { appName?: string }) => {
   Object.assign(domainConfig, envDomainConfig, overrides ?? {}, {
-    statusLabels: { ...envDomainConfig.statusLabels, ...(overrides?.statusLabels ?? {}) },
+    statusLabels: { ...envDomainConfig.statusLabels },
   })
 }
