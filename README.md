@@ -124,6 +124,7 @@ cd api
 npm install
 npm run seed
 npm run seed:demo
+npm run seed:workspaces
 npm run dev
 ```
 
@@ -145,7 +146,7 @@ This assigns existing ownerless data to the selected admin workspace and synchro
 
 The API runs on `http://localhost:4000`.
 
-`npm run seed` creates the local administrator account defined in `api/seeds/user.seed.js`; `npm run seed:demo` adds a generic Equipment record type and sample reference data. Use demo credentials only for local development and replace them before any deployment.
+`npm run seed` creates the local administrator account defined in `api/seeds/user.seed.js`; `npm run seed:demo` adds a generic Equipment record type and sample reference data. `npm run seed:workspaces` creates the Ganesh and Sudeep development organizations, each with separate categories, record types, groups, records, people, and employee login accounts. Use seeded credentials only for local development and replace them before any deployment.
 
 ### 3. Run the frontend
 
