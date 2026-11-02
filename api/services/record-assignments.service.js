@@ -26,6 +26,9 @@ export const assignRecord = async (recordId, data, userId, workspaceOwnerId) => 
   const person = await Person.findOne({ _id: data.personId, workspaceOwnerId });
   if (!person) throw new ApiError(404, "Person not found");
   if (!person.isActive) throw new ApiError(400, "Person is inactive");
+  if (record.groupId && String(record.groupId) !== String(person.groupId)) {
+    throw new ApiError(400, "A record can only be assigned to an employee in the same group");
+  }
 
   const active = await RecordAssignment.findOne({ recordId, workspaceOwnerId, returnedAt: { $exists: false } });
   if (active) throw new ApiError(400, "Record is already assigned");

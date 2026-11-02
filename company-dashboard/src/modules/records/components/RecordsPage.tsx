@@ -70,6 +70,9 @@ function AssignmentDialog({ record, people, mode, submitting, onClose, onSubmit 
   const [personId, setPersonId] = useState('')
   const [date, setDate] = useState('')
   const [notes, setNotes] = useState('')
+  const recordGroupId = getId(record.groupId)
+  const eligiblePeople = people.filter((person) => person.isActive && (!recordGroupId || getId(person.groupId) === recordGroupId))
+  const recordGroupName = getName(record.groupId)
 
   useEffect(() => {
     const close = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
@@ -102,8 +105,10 @@ function AssignmentDialog({ record, people, mode, submitting, onClose, onSubmit 
               <span className="mb-1.5 block text-sm font-medium text-slate-800">Assign to <span className="text-rose-500">*</span></span>
               <select value={personId} onChange={(event) => setPersonId(event.target.value)} required className={inputClass}>
                 <option value="">Select a person</option>
-                {people.filter((person) => person.isActive).map((person) => <option key={person._id} value={person._id}>{person.name}{person.reference ? ` (${person.reference})` : ''}</option>)}
+                {eligiblePeople.map((person) => <option key={person._id} value={person._id}>{person.name}{person.reference ? ` (${person.reference})` : ''}</option>)}
               </select>
+              {recordGroupId ? <span className="mt-1.5 block text-xs text-slate-500">Only active employees in {recordGroupName === '—' ? 'this group' : recordGroupName} can be assigned this record.</span> : null}
+              {eligiblePeople.length === 0 ? <span className="mt-1.5 block text-xs font-medium text-rose-600">No active employees are available in this group.</span> : null}
             </label>
           ) : null}
           <label className="block">
@@ -116,7 +121,7 @@ function AssignmentDialog({ record, people, mode, submitting, onClose, onSubmit 
           </label>
           <div className="flex justify-end gap-3 border-t border-slate-200 pt-4">
             <Button type="button" onClick={onClose}>Cancel</Button>
-            <Button type="submit" variant="primary" disabled={submitting}>{submitting ? 'Saving…' : mode === 'assign' ? 'Assign record' : 'Return record'}</Button>
+            <Button type="submit" variant="primary" disabled={submitting || (mode === 'assign' && eligiblePeople.length === 0)}>{submitting ? 'Saving…' : mode === 'assign' ? 'Assign record' : 'Return record'}</Button>
           </div>
         </form>
       </section>
