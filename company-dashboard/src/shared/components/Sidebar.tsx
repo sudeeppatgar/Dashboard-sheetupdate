@@ -19,7 +19,7 @@ type SidebarProps = {
 }
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
-  const { user, signOut } = useApp()
+  const { session, user, signOut } = useApp()
   const navItems = getNavItems(user?.role === 'admin')
 
   return (
@@ -34,7 +34,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <div className={`flex items-center gap-3 border-b border-slate-100 pb-4 ${isOpen ? 'justify-between' : 'justify-center'}`}>
           {isOpen ? (
             <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-slate-950">{domainConfig.appName}</p>
+              <p className="truncate text-sm font-bold text-slate-950">{session?.workspace?.name || domainConfig.appName}</p>
               <p className="mt-0.5 text-xs text-slate-500">Workspace navigation</p>
             </div>
           ) : null}

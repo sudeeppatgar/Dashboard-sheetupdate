@@ -4,19 +4,9 @@ import type { Notice } from '../../shared/types'
 import { AppContext, type AppContextValue } from './AppContext'
 import { clearSession, getSession, setSession } from '../../lib/storage'
 import { login as loginApi, registerAdmin as registerAdminApi } from '../../modules/auth/api'
-import { setDomainConfig } from '../config/domain'
-
-const getWorkspaceBranding = (session: Session | null) => {
-  const appName = session?.workspace?.config?.appName
-  return appName ? { appName } : undefined
-}
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [session, setSessionState] = useState<Session | null>(() => {
-    const initialSession = getSession()
-    setDomainConfig(getWorkspaceBranding(initialSession))
-    return initialSession
-  })
+  const [session, setSessionState] = useState<Session | null>(getSession)
   const [notice, setNotice] = useState<Notice | null>(null)
 
   const user = session?.user ?? null
@@ -26,7 +16,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback(async (email: string, password: string) => {
     const payload = await loginApi(email, password)
     const nextSession: Session = { token: payload.token, user: payload.user, workspace: payload.workspace }
-    setDomainConfig(getWorkspaceBranding(nextSession))
     setSession(nextSession)
     setSessionState(nextSession)
     return payload.user.name
@@ -35,7 +24,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const signUp = useCallback(async (payload: RegisterAdminPayload) => {
     const response = await registerAdminApi(payload)
     const nextSession: Session = { token: response.token, user: response.user, workspace: response.workspace }
-    setDomainConfig(getWorkspaceBranding(nextSession))
     setSession(nextSession)
     setSessionState(nextSession)
     return response.user.name
@@ -44,7 +32,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(() => {
     clearSession()
     setSessionState(null)
-    setDomainConfig()
     setNotice({ type: 'success', message: 'Logged out.' })
   }, [])
 

@@ -51,6 +51,8 @@ The backend API and database model names are domain-neutral. Configure a domain 
 
 For independent customer workspaces, use the **Create a workspace** registration page. Registration asks for the workspace name and administrator account. The frontend labels remain controlled by the global `VITE_*` environment variables.
 
+Workspace documents contain `name`, `slug`, `ownerId`, and `isActive`, plus MongoDB IDs and timestamps. The sidebar heading uses the workspace's `name`; terminology is not stored in a workspace `config` object. Existing documents or saved sessions may still contain legacy `config` data, which the frontend ignores and authentication responses omit. Removing it from the schema does not delete it from existing MongoDB documents.
+
 ## Project structure
 
 ```text

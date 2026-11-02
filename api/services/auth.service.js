@@ -6,28 +6,6 @@ import User from "../models/user.model.js";
 import Workspace from "../models/workspace.model.js";
 import { slugify } from "../utils/domain.js";
 
-const defaultWorkspaceConfig = {
-  appTagline: "Manage the records and resources that matter to your organization.",
-  recordSingular: "Record",
-  recordPlural: "Records",
-  categorySingular: "Category",
-  categoryPlural: "Categories",
-  typeSingular: "Record type",
-  typePlural: "Record types",
-  groupSingular: "Group",
-  groupPlural: "Groups",
-  personSingular: "Person",
-  personPlural: "People",
-  identifierLabel: "Reference",
-  acquisitionDateLabel: "Acquisition date",
-  statusLabels: {
-    active: "Active",
-    "in-progress": "In progress",
-    completed: "Completed",
-    archived: "Archived",
-  },
-};
-
 const getWorkspaceForUser = async (user) => {
   if (user.workspaceId) return Workspace.findById(user.workspaceId);
   if (user.workspaceOwnerId) return Workspace.findOne({ ownerId: user.workspaceOwnerId });
@@ -37,7 +15,8 @@ const getWorkspaceForUser = async (user) => {
 
 const serializeWorkspace = (workspace) => {
   if (!workspace) return null;
-  return workspace.toObject({ flattenMaps: true });
+  const { _id, name, slug, isActive } = workspace;
+  return { _id, name, slug, isActive };
 };
 
 const serializeAuthData = async (user) => {
@@ -96,10 +75,6 @@ export const registerAdmin = async ({ workspaceName, name, email, password }) =>
       name: normalizedWorkspaceName,
       slug,
       ownerId: admin._id,
-      config: {
-        ...defaultWorkspaceConfig,
-        appName: normalizedWorkspaceName,
-      },
     });
     admin.workspaceId = workspace._id;
     await admin.save();

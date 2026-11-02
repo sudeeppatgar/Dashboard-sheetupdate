@@ -16,7 +16,7 @@ export type DomainConfig = {
   statusLabels: Record<string, string>
 }
 
-const envDomainConfig: DomainConfig = {
+export const domainConfig: DomainConfig = {
   appName: import.meta.env.VITE_APP_NAME ?? 'Operations Workspace',
   appTagline: import.meta.env.VITE_APP_TAGLINE ?? 'Manage the records and resources that matter to your organization.',
   recordSingular: import.meta.env.VITE_RECORD_LABEL ?? 'Record',
@@ -37,15 +37,4 @@ const envDomainConfig: DomainConfig = {
     completed: import.meta.env.VITE_STATUS_COMPLETED_LABEL ?? 'Completed',
     archived: import.meta.env.VITE_STATUS_ARCHIVED_LABEL ?? 'Archived',
   },
-}
-
-export const domainConfig: DomainConfig = {
-  ...envDomainConfig,
-  statusLabels: { ...envDomainConfig.statusLabels },
-}
-
-export const setDomainConfig = (overrides?: { appName?: string }) => {
-  Object.assign(domainConfig, envDomainConfig, overrides ?? {}, {
-    statusLabels: { ...envDomainConfig.statusLabels },
-  })
 }

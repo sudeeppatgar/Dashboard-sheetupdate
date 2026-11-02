@@ -6,29 +6,11 @@ export type SessionUser = {
   workspaceId?: string
 }
 
-export type WorkspaceConfig = {
-  appName?: string
-  appTagline?: string
-  recordSingular?: string
-  recordPlural?: string
-  categorySingular?: string
-  categoryPlural?: string
-  typeSingular?: string
-  typePlural?: string
-  groupSingular?: string
-  groupPlural?: string
-  personSingular?: string
-  personPlural?: string
-  identifierLabel?: string
-  acquisitionDateLabel?: string
-  statusLabels?: Record<string, string>
-}
-
 export type WorkspaceSummary = {
   _id: string
   name: string
   slug: string
-  config: WorkspaceConfig
+  isActive?: boolean
 }
 
 export type Session = {

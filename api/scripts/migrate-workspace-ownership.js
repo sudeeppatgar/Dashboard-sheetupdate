@@ -40,7 +40,6 @@ const run = async () => {
       name: `${owner.name}'s Workspace`,
       slug: `${owner.name}-${owner._id}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""),
       ownerId: owner._id,
-      config: { appName: `${owner.name}'s Workspace` },
     });
   }
   owner.workspaceId = workspace._id;

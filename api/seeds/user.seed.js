@@ -4,24 +4,6 @@ import { connectDB } from "../config/db.js";
 import mongoose from "mongoose";
 import Workspace from "../models/workspace.model.js";
 
-const defaultConfig = {
-  appName: "Operations Workspace",
-  appTagline: "Manage the records and resources that matter to your organization.",
-  recordSingular: "Record",
-  recordPlural: "Records",
-  categorySingular: "Category",
-  categoryPlural: "Categories",
-  typeSingular: "Record type",
-  typePlural: "Record types",
-  groupSingular: "Group",
-  groupPlural: "Groups",
-  personSingular: "Person",
-  personPlural: "People",
-  identifierLabel: "Reference",
-  acquisitionDateLabel: "Acquisition date",
-  statusLabels: { active: "Active", "in-progress": "In progress", completed: "Completed", archived: "Archived" },
-};
-
 const seedUser = async () => {
   const exists = await User.findOne({
     email: "admin@company.com",
@@ -33,7 +15,7 @@ const seedUser = async () => {
     }
     let workspace = exists.workspaceId ? await Workspace.findById(exists.workspaceId) : await Workspace.findOne({ ownerId: exists._id });
     if (!workspace) {
-      workspace = await Workspace.create({ name: "Operations Workspace", slug: "operations-workspace", ownerId: exists._id, config: defaultConfig });
+      workspace = await Workspace.create({ name: "Operations Workspace", slug: "operations-workspace", ownerId: exists._id });
     }
     exists.workspaceId = workspace._id;
     await exists.save();
@@ -50,7 +32,7 @@ const seedUser = async () => {
 
   admin.workspaceOwnerId = admin._id;
   await admin.save();
-  const workspace = await Workspace.create({ name: "Operations Workspace", slug: "operations-workspace", ownerId: admin._id, config: defaultConfig });
+  const workspace = await Workspace.create({ name: "Operations Workspace", slug: "operations-workspace", ownerId: admin._id });
   admin.workspaceId = workspace._id;
   await admin.save();
 
