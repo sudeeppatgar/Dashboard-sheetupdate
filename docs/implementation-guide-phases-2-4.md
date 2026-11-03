@@ -304,19 +304,9 @@ After verification, archive or remove the old collections separately. The applic
 
 ## 7. Domain configuration
 
-The frontend supports neutral labels through `VITE_*` variables:
+The frontend uses fixed common names for records, categories, record types, groups, and people. The remaining display settings can be configured with these `VITE_*` variables:
 
 ```env
-VITE_RECORD_LABEL=Record
-VITE_RECORD_LABEL_PLURAL=Records
-VITE_CATEGORY_LABEL=Category
-VITE_CATEGORY_LABEL_PLURAL=Categories
-VITE_TYPE_LABEL=Record type
-VITE_TYPE_LABEL_PLURAL=Record types
-VITE_GROUP_LABEL=Group
-VITE_GROUP_LABEL_PLURAL=Groups
-VITE_PERSON_LABEL=Person
-VITE_PERSON_LABEL_PLURAL=People
 VITE_RECORD_IDENTIFIER_LABEL=Reference
 VITE_ACQUISITION_DATE_LABEL=Acquisition date
 ```

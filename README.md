@@ -24,21 +24,11 @@ The application gives administrators a single workspace to manage records and th
 
 ## Domain configuration
 
-The frontend uses neutral defaults and supports domain-specific terminology through Vite environment variables. Set these in `company-dashboard/.env` without changing the UI components. The sidebar navigation uses fixed common names across all domains.
+The frontend uses fixed common names for records, categories, record types, groups, and people across all domains. The application name, tagline, identifier label, acquisition date label, and default status labels can be set through Vite environment variables in `company-dashboard/.env`.
 
 ```env
 VITE_APP_NAME=Operations Workspace
 VITE_APP_TAGLINE=Manage the records and resources that matter to your organization.
-VITE_RECORD_LABEL=Record
-VITE_RECORD_LABEL_PLURAL=Records
-VITE_CATEGORY_LABEL=Category
-VITE_CATEGORY_LABEL_PLURAL=Categories
-VITE_TYPE_LABEL=Record type
-VITE_TYPE_LABEL_PLURAL=Record types
-VITE_GROUP_LABEL=Group
-VITE_GROUP_LABEL_PLURAL=Groups
-VITE_PERSON_LABEL=Person
-VITE_PERSON_LABEL_PLURAL=People
 VITE_RECORD_IDENTIFIER_LABEL=Reference
 VITE_ACQUISITION_DATE_LABEL=Acquisition date
 VITE_STATUS_ACTIVE_LABEL=Active
