@@ -5,6 +5,7 @@ import { useApp } from './shared/context/useApp'
 import { Sidebar } from './shared/components/Sidebar'
 import LoginPage from './modules/auth/components/LoginPage'
 import RegisterPage from './modules/auth/components/RegisterPage'
+import LandingPage from './modules/auth/components/LandingPage'
 import DashboardPage from './modules/dashboard/components/DashboardPage'
 import CategoriesPage from './modules/catalog/components/CategoriesPage'
 import RecordTypesPage from './modules/record-types/components/RecordTypesPage'
@@ -20,8 +21,10 @@ function App() {
   if (!isAuthenticated) {
     return (
       <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="*" element={<LoginPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     )
   }
