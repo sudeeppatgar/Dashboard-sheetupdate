@@ -5,13 +5,13 @@ import { domainConfig } from '../config/domain'
 const getNavItems = (isAdmin: boolean) => isAdmin
   ? [
       { to: '/dashboard', label: 'Dashboard', icon: '⌂', end: false },
-      { to: '/records', label: domainConfig.recordPlural, icon: '▦', end: false },
-      { to: '/categories', label: domainConfig.categoryPlural, icon: '◈', end: false },
-      { to: '/record-types', label: domainConfig.typePlural, icon: '⚙', end: false },
-      { to: '/groups', label: domainConfig.groupPlural, icon: '◫', end: false },
-      { to: '/people', label: domainConfig.personPlural, icon: '●', end: false },
+      { to: '/records', label: 'Records', icon: '▦', end: false },
+      { to: '/categories', label: 'Categories', icon: '◈', end: false },
+      { to: '/record-types', label: 'Record Types', icon: '⚙', end: false },
+      { to: '/groups', label: 'Groups', icon: '◫', end: false },
+      { to: '/people', label: 'People', icon: '●', end: false },
     ]
-  : [{ to: '/records', label: domainConfig.recordPlural, icon: '▦', end: true }]
+  : [{ to: '/records', label: 'Records', icon: '▦', end: true }]
 
 type SidebarProps = {
   isOpen: boolean

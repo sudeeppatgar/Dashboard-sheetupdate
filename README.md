@@ -24,7 +24,7 @@ The application gives administrators a single workspace to manage records and th
 
 ## Domain configuration
 
-The frontend uses neutral defaults and supports domain-specific terminology through Vite environment variables. Set these in `company-dashboard/.env` without changing the UI components. These values control the labels shown throughout the frontend, including the sidebar.
+The frontend uses neutral defaults and supports domain-specific terminology through Vite environment variables. Set these in `company-dashboard/.env` without changing the UI components. The sidebar navigation uses fixed common names across all domains.
 
 ```env
 VITE_APP_NAME=Operations Workspace
