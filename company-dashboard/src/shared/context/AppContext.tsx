@@ -7,7 +7,6 @@ export type AppContextValue = {
   user: SessionUser | null
   isAuthenticated: boolean
   canManage: boolean
-  notice: Notice | null
   setNotice: (notice: Notice | null) => void
   signIn: (email: string, password: string) => Promise<string>
   signUp: (payload: RegisterAdminPayload) => Promise<string>
