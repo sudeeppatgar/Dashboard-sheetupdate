@@ -1,4 +1,4 @@
-name: Backend and frontend deployment
+name: Backend deployment
 
 on:
   pull_request:
@@ -18,14 +18,3 @@ jobs:
     uses: sudeeppatgar/forgeflow/.github/workflows/reusable-render-deploy.yml@main
     secrets:
       RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-
-  deploy-frontend:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: ci
-    uses: sudeeppatgar/forgeflow/.github/workflows/reusable-netlify-deploy.yml@main
-    with:
-      node-version: '22'
-      publish-dir: company-dashboard/dist
-    secrets:
-      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
