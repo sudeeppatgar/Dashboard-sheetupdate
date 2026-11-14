@@ -2,10 +2,15 @@
   "name": "dashboard-sheetupdate",
   "private": true,
   "version": "1.0.0",
+  "workspaces": [
+    "api",
+    "company-dashboard"
+  ],
   "scripts": {
-    "lint": "npm run lint --prefix company-dashboard",
-    "build": "npm run build --prefix company-dashboard",
-    "build:api": "npm install --prefix api",
-    "dev": "npm run dev --prefix api & npm run dev --prefix company-dashboard"
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "dev": "npm run dev --workspace api & npm run dev --workspace company-dashboard"
   }
 }
