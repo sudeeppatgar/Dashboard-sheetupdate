@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useApp } from '../../../shared/context/useApp'
-import Notice from '../../../shared/components/Notice'
+
 import Button from '../../../shared/components/Button'
 import type { LoginFormValue } from '../types'
 import { getErrorMessage } from '../../../shared/utils/getErrorMessage'
@@ -19,7 +19,7 @@ const highlights = [
 ] as const
 
 function LoginPage() {
-  const { signIn, setNotice, notice } = useApp()
+  const { signIn, setNotice } = useApp()
   const navigate = useNavigate()
   const [form, setForm] = useState<LoginFormValue>(initialForm)
   const [submitting, setSubmitting] = useState(false)
@@ -81,7 +81,6 @@ function LoginPage() {
             </p>
           </div>
 
-          {notice ? <Notice notice={notice} className="mb-4" /> : null}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             <label className="block">

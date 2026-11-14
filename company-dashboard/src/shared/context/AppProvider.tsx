@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react'
+import { toast } from 'sonner'
 import type { RegisterAdminPayload, Session } from '../../modules/auth/types'
 import type { Notice } from '../../shared/types'
 import { AppContext, type AppContextValue } from './AppContext'
@@ -7,7 +8,6 @@ import { login as loginApi, registerAdmin as registerAdminApi } from '../../modu
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [session, setSessionState] = useState<Session | null>(getSession)
-  const [notice, setNotice] = useState<Notice | null>(null)
 
   const user = session?.user ?? null
   const isAuthenticated = Boolean(session?.token)
@@ -29,11 +29,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return response.user.name
   }, [])
 
+  const setNotice = useCallback((notice: Notice | null) => {
+    if (!notice) {
+      toast.dismiss()
+      return
+    }
+
+    if (notice.type === 'success') {
+      toast.success(notice.message)
+    } else {
+      toast.error(notice.message)
+    }
+  }, [])
+
   const signOut = useCallback(() => {
     clearSession()
     setSessionState(null)
     setNotice({ type: 'success', message: 'Logged out.' })
-  }, [])
+  }, [setNotice])
 
   const value = useMemo<AppContextValue>(
     () => ({
@@ -41,13 +54,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       user,
       isAuthenticated,
       canManage,
-      notice,
       setNotice,
       signIn,
       signUp,
       signOut,
     }),
-    [session, user, isAuthenticated, canManage, notice, setNotice, signIn, signUp, signOut]
+    [session, user, isAuthenticated, canManage, setNotice, signIn, signUp, signOut]
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

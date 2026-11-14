@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Button from '../../../shared/components/Button'
-import Notice from '../../../shared/components/Notice'
+
 import { useApp } from '../../../shared/context/useApp'
 import { getErrorMessage } from '../../../shared/utils/getErrorMessage'
 import type { RegisterAdminPayload } from '../types'
@@ -17,7 +17,7 @@ const initialForm: RegisterAdminPayload = {
 const inputClass = 'w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:bg-white focus:ring-4 focus:ring-cyan-100'
 
 export default function RegisterPage() {
-  const { signUp, setNotice, notice } = useApp()
+  const { signUp, setNotice } = useApp()
   const navigate = useNavigate()
   const [form, setForm] = useState<RegisterAdminPayload>(initialForm)
   const [submitting, setSubmitting] = useState(false)
@@ -67,7 +67,6 @@ export default function RegisterPage() {
             <Link to="/login" className="text-sm font-semibold text-cyan-700 hover:text-cyan-800">Sign in</Link>
           </div>
 
-          {notice ? <Notice notice={notice} className="mb-4" /> : null}
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="grid gap-4 sm:grid-cols-2">
