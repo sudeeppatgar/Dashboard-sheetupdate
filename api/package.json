@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
+    "lint": "eslint .",
+    "test": "node --test \"tests/**/*.test.js\"",
+    "build": "find . -name '*.js' -not -path './node_modules/*' -print0 | xargs -0 -n1 node --check",
     "seed": "node seeds/user.seed.js",
     "seed:demo": "node seeds/demo.seed.js",
     "seed:workspaces": "node seeds/multi-admin.seed.js",
@@ -27,6 +30,10 @@
     "mongoose": "^8.16.4"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.3.2"
   }
 }
