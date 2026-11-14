@@ -1,0 +1,11 @@
+{
+  "name": "dashboard-sheetupdate",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "lint": "npm run lint --prefix company-dashboard",
+    "build": "npm run build --prefix company-dashboard",
+    "build:api": "npm install --prefix api",
+    "dev": "npm run dev --prefix api & npm run dev --prefix company-dashboard"
+  }
+}
